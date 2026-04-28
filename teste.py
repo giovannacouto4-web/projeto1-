@@ -1,4 +1,5 @@
 import streamlit as st
 
-st.title('Teste ECMI 2')
-st.write("Esse é o meu texto")
+st.title('App da gica')
+st.write("Gostaria de ir embora")
+st.write("Estou com muita dor de cabeça")
