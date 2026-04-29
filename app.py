@@ -3,9 +3,9 @@ import random
 import pandas as pd
 import os
 
-st.set_page_config(page_title="IndecisApp", page_icon="🤔")
+st.set_page_config(page_title="IndecisApp")
 
-st.title("🤔 IndecisApp - Deixe o app decidir por você!")
+st.title("IndecisApp - Deixe o app decidir por você!")
 
 # Entrada de opções
 opcoes = st.text_input("Digite opções separadas por vírgula:")
@@ -24,11 +24,4 @@ if st.button("Decidir"):
     else:
         st.warning("Digite pelo menos uma opção!")
 
-# Mostrar histórico
-if st.session_state.historico:
-    st.subheader("📊 Histórico de escolhas")
-    
-    df = pd.DataFrame(st.session_state.historico, columns=["Escolhas"])
-    st.write(df)
 
-    st.bar_chart(df["Escolhas"].value_counts())
