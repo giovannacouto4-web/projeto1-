@@ -1,5 +1,5 @@
 import streamlit as st
-from anthropic import Anthropic
+from anthropic import anthropic
  
 st.set_page_config(page_title="Guia de Viagem ✈️", page_icon="✈️", layout="centered")
  
