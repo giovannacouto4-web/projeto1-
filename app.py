@@ -22,4 +22,8 @@ if st.button("Decidir"):
     else:
         st.warning("Digite pelo menos uma opção!")
 
+if st.session_state.historico:
+    st.subheader("Histórico de escolhas")
+    st.write(st.session_state.historico)
+
 
