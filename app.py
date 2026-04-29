@@ -1,36 +1,34 @@
 import streamlit as st
-from anthropic import anthropic
- 
-st.set_page_config(page_title="Guia de Viagem ✈️", page_icon="✈️", layout="centered")
- 
-st.title("✈️ Guia de Viagem")
-st.caption("Digite um país e receba as melhores dicas de viagem")
- 
-client = Anthropic()
- 
-pais = st.text_input("🌍 Para onde você quer ir?", placeholder="Ex: Japão, Portugal, Peru...")
- 
-if st.button("Buscar dicas", use_container_width=True, type="primary"):
-    if not pais.strip():
-        st.warning("Digite o nome de um país primeiro!")
+import random
+import pandas as pd
+import os
+
+st.set_page_config(page_title="IndecisApp", page_icon="🤔")
+
+st.title("🤔 IndecisApp - Deixe o app decidir por você!")
+
+# Entrada de opções
+opcoes = st.text_input("Digite opções separadas por vírgula:")
+
+if "historico" not in st.session_state:
+    st.session_state.historico = []
+
+if st.button("Decidir"):
+    lista = [op.strip() for op in opcoes.split(",") if op.strip() != ""]
+    
+    if lista:
+        escolha = random.choice(lista)
+        st.success(f"Escolha: {escolha}")
+        
+        st.session_state.historico.append(escolha)
     else:
-        with st.spinner(f"Pesquisando dicas para {pais}..."):
-            response = client.messages.create(
-                model="claude-opus-4-5",
-                max_tokens=1024,
-                messages=[
-                    {
-                        "role": "user",
-                        "content": f"""Me dê um guia rápido de viagem para {pais} com estas seções:
- 
-🏆 Por que visitar (3 razões)
-📅 Melhor época para ir
-📍 Top 3 destinos imperdíveis
-🍽️ Pratos típicos que precisa provar
-💡 Dica de ouro do viajante
- 
-Seja direto, animado e útil. Use emojis. Responda em português."""
-                    }
-                ]
-            )
-            st.markdown(response.content[0].text)
+        st.warning("Digite pelo menos uma opção!")
+
+# Mostrar histórico
+if st.session_state.historico:
+    st.subheader("📊 Histórico de escolhas")
+    
+    df = pd.DataFrame(st.session_state.historico, columns=["Escolhas"])
+    st.write(df)
+
+    st.bar_chart(df["Escolhas"].value_counts())
