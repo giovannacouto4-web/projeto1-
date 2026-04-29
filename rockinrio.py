@@ -1,5 +1,34 @@
 import streamlit as st
+import random
+import pandas as pd
+import os
 
-st.title('Será que o Justin Bieber virá para o Rock in Rio?')
-st.write("O último show de Justin Bieber foi no Rock in Rio de 2022. De lá para cá, o cantor não voltou a subir nos palcos. Mas o perfil oficial do festival atiçou os fãs nesta semana, com um comentário em uma foto do cantor no Instagram. “Tive uma ideia aqui… o que acham?”, escreveu o @rockinrio.")
-st.image('https://poptivo.com.br/wp-content/uploads/2024/01/photo_2024-01-19_17-10-51-300x280.jpg')
+st.set_page_config(page_title="IndecisApp", page_icon="🤔")
+
+st.title("🤔 IndecisApp - Deixe o app decidir por você!")
+
+# Entrada de opções
+opcoes = st.text_input("Digite opções separadas por vírgula:")
+
+if "historico" not in st.session_state:
+    st.session_state.historico = []
+
+if st.button("Decidir"):
+    lista = [op.strip() for op in opcoes.split(",") if op.strip() != ""]
+    
+    if lista:
+        escolha = random.choice(lista)
+        st.success(f"Escolha: {escolha}")
+        
+        st.session_state.historico.append(escolha)
+    else:
+        st.warning("Digite pelo menos uma opção!")
+
+# Mostrar histórico
+if st.session_state.historico:
+    st.subheader("📊 Histórico de escolhas")
+    
+    df = pd.DataFrame(st.session_state.historico, columns=["Escolhas"])
+    st.write(df)
+
+    st.bar_chart(df["Escolhas"].value_counts())
