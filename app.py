@@ -1,5 +1,36 @@
 import streamlit as st
-
-st.title('Será que o Justin Bieber virá para o Rock in Rio?')
-st.write("O último show de Justin Bieber foi no Rock in Rio de 2022. De lá para cá, o cantor não voltou a subir nos palcos. Mas o perfil oficial do festival atiçou os fãs nesta semana, com um comentário em uma foto do cantor no Instagram. “Tive uma ideia aqui… o que acham?”, escreveu o @rockinrio.")
-st.image('https://poptivo.com.br/wp-content/uploads/2024/01/photo_2024-01-19_17-10-51-300x280.jpg')
+from anthropic import Anthropic
+ 
+st.set_page_config(page_title="Guia de Viagem ✈️", page_icon="✈️", layout="centered")
+ 
+st.title("✈️ Guia de Viagem")
+st.caption("Digite um país e receba as melhores dicas de viagem")
+ 
+client = Anthropic()
+ 
+pais = st.text_input("🌍 Para onde você quer ir?", placeholder="Ex: Japão, Portugal, Peru...")
+ 
+if st.button("Buscar dicas", use_container_width=True, type="primary"):
+    if not pais.strip():
+        st.warning("Digite o nome de um país primeiro!")
+    else:
+        with st.spinner(f"Pesquisando dicas para {pais}..."):
+            response = client.messages.create(
+                model="claude-opus-4-5",
+                max_tokens=1024,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": f"""Me dê um guia rápido de viagem para {pais} com estas seções:
+ 
+🏆 Por que visitar (3 razões)
+📅 Melhor época para ir
+📍 Top 3 destinos imperdíveis
+🍽️ Pratos típicos que precisa provar
+💡 Dica de ouro do viajante
+ 
+Seja direto, animado e útil. Use emojis. Responda em português."""
+                    }
+                ]
+            )
+            st.markdown(response.content[0].text)
