@@ -1,7 +1,6 @@
 import streamlit as st
 import random
 import pandas as pd
-import os
 
 st.set_page_config(page_title="IndecisApp")
 
