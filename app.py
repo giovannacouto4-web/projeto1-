@@ -35,7 +35,6 @@ def escolher():
 if st.session_state.modo == "inicio":
     if st.button("Decidir"):
         escolher()
-        st.rerun()
 
 
 if st.session_state.modo == "resultado":
