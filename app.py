@@ -1,7 +1,7 @@
 import streamlit as st
 import random
 
-st.set_page_config(page_title="IndecisApp")
+st.set_page_config(page_title="")
 
 st.title("IndecisApp - Deixe o app decidir por você!")
 
@@ -25,5 +25,9 @@ if st.button("Decidir"):
 if st.session_state.historico:
     st.subheader("Histórico de escolhas")
     st.write(st.session_state.historico)
+    
+    if st.button("Limpar histórico"):
+        st.session_state.historico = []
+        st.success("Histórico limpo!")
 
 
