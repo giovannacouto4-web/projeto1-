@@ -50,9 +50,8 @@ if st.session_state.ultima_escolha:
         st.success("Que bom!")
     elif resposta == "Não":
         st.info("Quer tentar de novo?")
-    
-if resposta in ["Sim", "Não"]:
-    if st.button("Recomeçar"):
+    if resposta in ["Sim", "Não"]:
+        if st.button("Recomeçar"):
         st.session_state.ultima_escolha = None
         st.session_state.feedback = None
         st.session_state.input_opcoes = ""  # só funciona se você usar key no input
