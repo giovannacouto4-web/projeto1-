@@ -1,12 +1,12 @@
 import streamlit as st
 import random
 
-st.set_page_config(page_title="")
+st.set_page_config(page_title="Decide por mim")
 
-st.title("IndecisApp - Deixe o app decidir por você!")
+st.title("Decide por mim")
 
 # Entrada de opções
-opcoes = st.text_input("Digite opções separadas por vírgula:")
+opcoes = st.text_input("O app funciona assim: Digite opções separadas por vírgula:")
 
 if "historico" not in st.session_state:
     st.session_state.historico = []
