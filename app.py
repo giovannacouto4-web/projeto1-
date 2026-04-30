@@ -8,7 +8,7 @@ st.text("É muito simples de usar!")
 st.text("Apenas digite quantas e quais opções você está em dúvida e nós decidiremos por você!")
 
 # Entrada de opções
-opcoes = st.text_input("Digite aqui:", key="input_opcoes)
+opcoes = st.text_input("Digite aqui:", key="input_opcoes")
 
 # Estados
 if "historico" not in st.session_state:
