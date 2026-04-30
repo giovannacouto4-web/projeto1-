@@ -5,12 +5,12 @@ st.set_page_config(page_title="Sem dúvidas!")
 
 st.title("Sem dúvidas!")
 st.write("É muito simples de usar!")
-st.write("Apenas digite opções separadas por vírgula e nós decidiremos por você!")
+st.write("Apenas digite opções separadas por vírgula e nós decidiremos por você! Lembrando, pode ser quantas e quais você quiser!")
 
-# Entrada
+
 opcoes = st.text_input("Digite aqui:")
 
-# Estados
+
 if "historico" not in st.session_state:
     st.session_state.historico = []
 
@@ -20,7 +20,7 @@ if "ultima_escolha" not in st.session_state:
 if "modo" not in st.session_state:
     st.session_state.modo = "inicio"
 
-# Função escolher
+
 def escolher():
     lista = [op.strip() for op in opcoes.split(",") if op.strip()]
     if lista:
@@ -31,13 +31,13 @@ def escolher():
     else:
         st.warning("Digite pelo menos uma opção!")
 
-# BOTÃO INICIAL
+
 if st.session_state.modo == "inicio":
     if st.button("Decidir"):
         escolher()
         st.rerun()
 
-# RESULTADO (AGORA SEMPRE VEM PRIMEIRO)
+
 if st.session_state.modo == "resultado":
     st.success(f"Escolha: {st.session_state.ultima_escolha}")
 
@@ -48,16 +48,16 @@ if st.session_state.modo == "resultado":
     )
 
     if resposta == "Sim":
-        st.success("Boa! 😄")
+        st.success("Que bom!")
 
     elif resposta == "Não":
-        st.warning("Vamos tentar outra então!")
+        st.warning("Quer tentar de novo?")
 
         if st.button("Tentar novamente"):
             escolher()
             st.rerun()
 
-# HISTÓRICO (SEMPRE DEPOIS DO RESULTADO)
+
 if st.session_state.historico:
     st.subheader("Histórico")
     st.write(st.session_state.historico)
