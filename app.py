@@ -17,9 +17,6 @@ if "historico" not in st.session_state:
 if "ultima_escolha" not in st.session_state:
     st.session_state.ultima_escolha = None
 
-if "feedback" not in st.session_state:
-    st.session_state.feedback = None
-
 # Botão decidir
 if st.button("Decidir"):
     lista = [op.strip() for op in opcoes.split(",") if op.strip() != ""]
@@ -29,7 +26,7 @@ if st.button("Decidir"):
         
         st.session_state.ultima_escolha = escolha
         st.session_state.historico.append(escolha)
-        st.session_state.feedback = None
+
     else:
         st.warning("Digite pelo menos uma opção!")
 
