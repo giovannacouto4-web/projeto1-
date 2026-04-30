@@ -9,6 +9,18 @@ st.text("Apenas digite quantas e quais opções você está em dúvida e nós de
 
 # Entrada de opções
 opcoes = st.text_input("Digite aqui:", key="input_opcoes")
+if st.button("Decidir"):
+    lista = [op.strip() for op in st.session_state.input_opcoes.split(",") if op.strip() != ""]
+    
+    if lista:
+        escolha = random.choice(lista)
+        st.success(f"Escolha: {escolha}")
+        
+        st.session_state.historico.append(escolha)
+        
+        st.session_state.input_opcoes = ""
+    else:
+        st.warning("Digite pelo menos uma opção!")
 
 if "historico" not in st.session_state:
     st.session_state.historico = []
