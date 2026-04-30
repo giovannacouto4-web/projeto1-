@@ -21,10 +21,7 @@ if st.button("Decidir"):
         st.session_state.historico.append(escolha)
     else:
         st.warning("Digite pelo menos uma opção!")
-        
-        st.write("Gostou da sua escolha?")
-        feedback = st.radio("Selecione uma opção:", ["Sim", "Não"], index=None)
-
+   
 if feedback == "Sim":
     st.success("Que bom! 😄")
 elif feedback == "Não":
