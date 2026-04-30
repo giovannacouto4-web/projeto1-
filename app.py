@@ -5,7 +5,7 @@ st.set_page_config(page_title="Sem dúvidas!")
 
 st.title("Sem dúvidas!")
 st.write("É muito simples de usar!")
-st.write("Apenas digite opções separadas por vírgula e nós decidiremos por você! Lembrando, pode ser quantas e quais palavras e opções você quiser!")
+st.write("Se você está em dúvida em opções em situações da sua vida, apenas digite opções separadas por vírgula e nós decidiremos por você! Lembrando, pode ser quantas e quais palavras e opções você quiser!")
 
 
 opcoes = st.text_input("Digite aqui:")
