@@ -30,6 +30,7 @@ if st.button("Decidir"):
         st.session_state.ultima_escolha = escolha
         st.session_state.historico.append(escolha)
         st.session_state.feedback = None
+        st.session_state.radio_feedback = None  # reset do radio
     else:
         st.warning("Digite pelo menos uma opção!")
 
@@ -39,23 +40,24 @@ if st.session_state.ultima_escolha:
 
     st.write("Gostou da sua escolha?")
 
-    resposta = st.radio(
+    st.radio(
         "Selecione uma opção:",
         ["Sim", "Não"],
         index=None,
         key="radio_feedback"
     )
 
-    if resposta == "Sim":
+    if st.session_state.radio_feedback == "Sim":
         st.success("Que bom!")
 
-    elif resposta == "Não":
+    elif st.session_state.radio_feedback == "Não":
         st.info("Quer tentar de novo?")
 
-        if st.button("Tentar novamente"):
+        if st.button("Tentar novamente", key="btn_reset"):
             st.session_state.ultima_escolha = None
             st.session_state.feedback = None
             st.session_state.input_opcoes = ""
+            st.session_state.radio_feedback = None
             st.rerun()
 
 # Histórico
