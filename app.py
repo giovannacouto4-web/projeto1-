@@ -18,9 +18,9 @@ if "ultima_escolha" not in st.session_state:
     st.session_state.ultima_escolha = None
 
 if "modo" not in st.session_state:
-    st.session_state.modo = "inicio"  # controla a tela
+    st.session_state.modo = "inicio"
 
-# Função para escolher
+# Função escolher
 def escolher():
     lista = [op.strip() for op in opcoes.split(",") if op.strip()]
     if lista:
@@ -35,9 +35,10 @@ def escolher():
 if st.session_state.modo == "inicio":
     if st.button("Decidir"):
         escolher()
+        st.rerun()
 
-# TELA DE RESULTADO
-elif st.session_state.modo == "resultado":
+# RESULTADO (AGORA SEMPRE VEM PRIMEIRO)
+if st.session_state.modo == "resultado":
     st.success(f"Escolha: {st.session_state.ultima_escolha}")
 
     resposta = st.radio(
@@ -56,7 +57,7 @@ elif st.session_state.modo == "resultado":
             escolher()
             st.rerun()
 
-# Histórico
+# HISTÓRICO (SEMPRE DEPOIS DO RESULTADO)
 if st.session_state.historico:
     st.subheader("Histórico")
     st.write(st.session_state.historico)
