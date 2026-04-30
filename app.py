@@ -21,6 +21,15 @@ if st.button("Decidir"):
         st.session_state.historico.append(escolha)
     else:
         st.warning("Digite pelo menos uma opção!")
+        
+        st.write("Gostou da sua escolha?")
+        feedback = st.radio("Selecione uma opção:", ["Sim", "Não"], index=None)
+
+if feedback == "Sim":
+    st.success("Que bom! 😄")
+elif feedback == "Não":
+    st.info("Que tal tentar novamente? 😉")
+
 
 if st.session_state.historico:
     st.subheader("Histórico de escolhas")
@@ -30,18 +39,3 @@ if st.session_state.historico:
         st.session_state.historico = []
         st.success("Histórico limpo!")
         st.rerun()
-
-st.write("Gostou da sua escolha?")
-
-feedback = st.radio(
-    "Selecione uma opção:",
-    ["Sim", "Não"],
-    index=None
-)
-
-if feedback == "Sim":
-    st.success("Que bom! 😄")
-elif feedback == "Não":
-    st.info("Que tal tentar novamente? 😉")
-
-
