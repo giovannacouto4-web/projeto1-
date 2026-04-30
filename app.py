@@ -29,5 +29,6 @@ if st.session_state.historico:
     if st.button("Limpar histórico"):
         st.session_state.historico = []
         st.success("Histórico limpo!")
+        st.rerun()
 
 
