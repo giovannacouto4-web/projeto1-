@@ -47,8 +47,7 @@ if st.session_state.ultima_escolha:
         st.success("Que bom!")
     elif resposta == "Não":
         st.info("Tente novamente, na próxima pode ser que seja melhor!")
-        
-    if st.button("Tentar novamente"):
+        if st.button("Tentar novamente"):
         st.session_state.ultima_escolha = None
         st.session_state.radio_feedback = None
         st.rerun()
