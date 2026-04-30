@@ -21,11 +21,6 @@ if st.button("Decidir"):
         st.session_state.historico.append(escolha)
     else:
         st.warning("Digite pelo menos uma opção!")
-   
-if feedback == "Sim":
-    st.success("Que bom! 😄")
-elif feedback == "Não":
-    st.info("Que tal tentar novamente? 😉")
 
 
 if st.session_state.historico:
