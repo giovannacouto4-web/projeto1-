@@ -26,7 +26,9 @@ if st.button("Decidir"):
         
         st.session_state.ultima_escolha = escolha
         st.session_state.historico.append(escolha)
-
+        
+        # reset do radio
+        st.session_state.radio_feedback = None
     else:
         st.warning("Digite pelo menos uma opção!")
 
@@ -45,13 +47,21 @@ if st.session_state.ultima_escolha:
 
     if resposta == "Sim":
         st.success("Que bom!")
+
     elif resposta == "Não":
         st.info("Tente novamente, na próxima pode ser que seja melhor!")
+
+        # BOTÃO CORRIGIDO
         if st.button("Tentar novamente"):
-        st.session_state.ultima_escolha = None
-        st.session_state.radio_feedback = None
-        st.rerun()
-  
+            lista = [op.strip() for op in opcoes.split(",") if op.strip() != ""]
+            
+            if lista:
+                nova_escolha = random.choice(lista)
+                st.session_state.ultima_escolha = nova_escolha
+                st.session_state.historico.append(nova_escolha)
+                st.session_state.radio_feedback = None
+                st.rerun()
+
 # Histórico
 if st.session_state.historico:
     st.subheader("Histórico de escolhas")
