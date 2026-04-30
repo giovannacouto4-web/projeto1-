@@ -8,7 +8,7 @@ st.text("O app funciona assim:")
 st.text(" digite quantas e quais opções você está em dúvida e nós decidiremos por você")
 
 # Entrada de opções
-opcoes = st.text_input(("O app funciona assim: digite quantas e quais opções você está em dúvida e nós decidiremos por você"))
+opcoes = st.text_input("O app funciona assim: digite quantas e quais opções você está em dúvida e nós decidiremos por você")
 
 if "historico" not in st.session_state:
     st.session_state.historico = []
