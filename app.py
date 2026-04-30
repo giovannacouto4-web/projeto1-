@@ -8,7 +8,7 @@ st.text("É muito simples de usar!")
 st.text("Apenas digite quantas e quais opções você está em dúvida e nós decidiremos por você!")
 
 # Entrada de opções
-opcoes = st.text_input("Digite aqui:")
+opcoes = st.text_input("Digite aqui:", key="input_opcoes)
 
 # Estados
 if "historico" not in st.session_state:
@@ -47,9 +47,15 @@ if st.session_state.ultima_escolha:
     )
 
     if resposta == "Sim":
-        st.success("Que bom! 😄")
+        st.success("Que bom!")
     elif resposta == "Não":
-        st.info("Que tal tentar novamente? 😉")
+        st.info("Quer tentar de novo?")
+        if resposta in ["Sim", "Não"]:
+    if st.button("Recomeçar"):
+        st.session_state.ultima_escolha = None
+        st.session_state.feedback = None
+        st.session_state.input_opcoes = ""  # só funciona se você usar key no input
+        st.rerun()
 
 # Histórico
 if st.session_state.historico:
