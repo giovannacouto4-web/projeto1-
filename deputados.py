@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd 
 df = pd.read_csv('deputados_2022.csv')
+st.title("Consulta aos deputados de 2022")
 
 partidos = df["partido"].unique()
 
