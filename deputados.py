@@ -5,7 +5,7 @@ df = pd.read_csv('deputados_2022.csv')
 st.title("Consulta aos deputados de 2022")
 
 partidos = df["partido"].unique()
-@@ -14,10 +15,12 @@
+
 partidos = st.text_input('Digite o partido que você queira ver os deputados:')
 uf = st.text_input('Digite a UF')
 
