@@ -11,7 +11,9 @@ deputados_filtrados = df[df["partido"] == partido_selecionado]
 
 st.dataframe(deputados_filtrados)
 
+partidos = st.text_input('Digite o partido que você queira ver os deputados:')
 uf = st.text_input('Digite a UF')
+
 if sigla:
   df_filtrado = df[df['partido'] == sigla.upper()]
 else: 
