@@ -9,8 +9,6 @@ partidos = df["partido"].unique()
 partidos = st.text_input('Digite o partido que você queira ver os deputados:')
 uf = st.text_input('Digite a UF')
 
-if partido:
-  df_filtrado = df[df['partido'] == partido.upper()]
 if partidos:
   df_filtrado = df[df['partido'] == partidos.upper()]
 else: 
