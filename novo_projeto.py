@@ -1,14 +1,17 @@
 import streamlit as st
 import random
+from google import genai
+import os
 
 st.set_page_config(page_title="Sem dúvidas!")
 
-st.secrets["GEMINI_API_KEY"]
+segredo = st.secrets["GEMINI_API_KEY"]
+os.environ["GOOGLE_API_KEY"] = segredo
+client = genai.Client()
+MODEL_ID = "gemini-2.5-flash"
 st.title("Sem dúvidas!")
 st.write("É muito simples de usar!")
 st.write("Se você está em dúvida em opções em situações da sua vida, apenas digite opções separadas por vírgula e nós decidiremos por você! Lembrando, pode ser quantas e quais palavras e opções você quiser!")
-
-input('AIzaSyBjc-hdOVZwe1JumD2aEUiRimc5Mj3tZTs1')
 
 opcoes = st.text_input("Digite aqui:")
 
