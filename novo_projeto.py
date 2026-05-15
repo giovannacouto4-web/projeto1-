@@ -1,21 +1,18 @@
 import streamlit as st
-from google import genai
-import os
+import google.generativeai as genai
 
-
+# CONFIGURAÇÃO DA PÁGINA
 st.set_page_config(page_title="Sem dúvidas!")
 
+# API KEY
+genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
-segredo = st.secrets["GEMINI_API_KEY"]
-os.environ["GOOGLE_API_KEY"] = segredo
-
-client = genai.Client()
-
-MODEL_ID = "google-generativeai==0.8.5"
+# MODELO
+MODEL_ID = "gemini-1.5-flash"
 
 # TÍTULO
 st.title("Sem dúvidas!")
-st.write("É muito simples de usar!")
+
 st.write(
     "Digite opções separadas por vírgula e a IA escolherá por você!"
 )
@@ -37,7 +34,7 @@ if "modo" not in st.session_state:
     st.session_state.modo = "inicio"
 
 
-# FUNÇÃO COM IA
+# FUNÇÃO IA
 def escolher_com_ia():
 
     lista = [op.strip() for op in opcoes.split(",") if op.strip()]
@@ -47,26 +44,30 @@ def escolher_com_ia():
         return
 
     prompt = f"""
-    Escolha apenas UMA opção dessa lista:
+Escolha apenas UMA opção dessa lista:
 
-    {lista}
+{lista}
 
-    Responda SOMENTE com a opção escolhida.
-    """
+Responda SOMENTE com a opção escolhida.
+"""
 
-    resposta = client.models.generate_content(
-        model=MODEL_ID,
-        contents=prompt
-    )
+    try:
 
-    escolha = resposta.text.strip()
+        model = genai.GenerativeModel(MODEL_ID)
 
-    st.session_state.ultima_escolha = escolha
-    st.session_state.historico.append(escolha)
-    st.session_state.modo = "resultado"
+        resposta = model.generate_content(prompt)
+
+        escolha = resposta.text.strip()
+
+        st.session_state.ultima_escolha = escolha
+        st.session_state.historico.append(escolha)
+        st.session_state.modo = "resultado"
+
+    except Exception as e:
+        st.error(f"Erro: {e}")
 
 
-# BOTÃO INICIAL
+# BOTÃO
 if st.session_state.modo == "inicio":
 
     if st.button("Decidir"):
@@ -88,8 +89,6 @@ if st.session_state.modo == "resultado":
         st.success("Que bom!")
 
     elif resposta_usuario == "Não":
-
-        st.warning("Quer tentar de novo?")
 
         if st.button("Tentar novamente"):
             escolher_com_ia()
