@@ -2,10 +2,10 @@ import streamlit as st
 from google import genai
 import os
 
-# CONFIGURAÇÃO DA PÁGINA
+
 st.set_page_config(page_title="Sem dúvidas!")
 
-# CONFIGURAÇÃO DA API
+
 segredo = st.secrets["GEMINI_API_KEY"]
 os.environ["GOOGLE_API_KEY"] = segredo
 
