@@ -3,6 +3,7 @@ import random
 
 st.set_page_config(page_title="Sem dúvidas!")
 
+st.secrets["GEMINI_API_KEY"]
 st.title("Sem dúvidas!")
 st.write("É muito simples de usar!")
 st.write("Se você está em dúvida em opções em situações da sua vida, apenas digite opções separadas por vírgula e nós decidiremos por você! Lembrando, pode ser quantas e quais palavras e opções você quiser!")
