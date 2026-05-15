@@ -1,0 +1,65 @@
+import streamlit as st
+import random
+
+st.set_page_config(page_title="Sem dúvidas!")
+
+st.title("Sem dúvidas!")
+st.write("É muito simples de usar!")
+st.write("Se você está em dúvida em opções em situações da sua vida, apenas digite opções separadas por vírgula e nós decidiremos por você! Lembrando, pode ser quantas e quais palavras e opções você quiser!")
+
+
+opcoes = input('AIzaSyBjc-hdOVZwe1JumD2aEUiRimc5Mj3tZTs1')
+
+if "historico" not in st.session_state:
+    st.session_state.historico = []
+
+if "ultima_escolha" not in st.session_state:
+    st.session_state.ultima_escolha = None
+
+if "modo" not in st.session_state:
+    st.session_state.modo = "inicio"
+
+
+def escolher():
+    lista = [op.strip() for op in opcoes.split(",") if op.strip()]
+    if lista:
+        escolha = random.choice(lista)
+        st.session_state.ultima_escolha = escolha
+        st.session_state.historico.append(escolha)
+        st.session_state.modo = "resultado"
+    else:
+        st.warning("Digite pelo menos uma opção!")
+
+
+if st.session_state.modo == "inicio":
+    if st.button("Decidir"):
+        escolher()
+
+
+if st.session_state.modo == "resultado":
+    st.success(f"Escolha: {st.session_state.ultima_escolha}")
+
+    resposta = st.radio(
+        "Gostou da escolha?",
+        ["Sim", "Não"],
+        index=None
+    )
+
+    if resposta == "Sim":
+        st.success("Que bom!")
+
+    elif resposta == "Não":
+        st.warning("Quer tentar de novo?")
+
+        if st.button("Tentar novamente"):
+            escolher()
+            st.rerun()
+
+
+if st.session_state.historico:
+    st.subheader("Histórico")
+    st.write(st.session_state.historico)
+
+    if st.button("Limpar histórico"):
+        st.session_state.historico = []
+        st.rerun()
