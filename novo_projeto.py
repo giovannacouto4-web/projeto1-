@@ -11,7 +11,7 @@ os.environ["GOOGLE_API_KEY"] = segredo
 
 client = genai.Client()
 
-MODEL_ID = "gemini-2.5-flash"
+MODEL_ID = "google-generativeai==0.8.5"
 
 # TÍTULO
 st.title("Sem dúvidas!")
