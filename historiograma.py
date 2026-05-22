@@ -1,92 +1,116 @@
 import pandas as pd
-import requests
-from bs4 import BeautifulSoup
 from matplotlib import pyplot as plt
-import matplotlib.ticker as ticker
 
-# =========================
-# PEGAR DADOS DO SITE
-# =========================
+# ==========================================
+# DADOS DO SITE SPOTIFY NEWSROOM
+# ==========================================
 
-url = "https://kworb.net/spotify/listeners.html"
+# Top artistas mais streamados
+artistas = [
+    "Taylor Swift",
+    "Bad Bunny",
+    "Drake",
+    "The Weeknd",
+    "Ariana Grande",
+    "Ed Sheeran",
+    "Justin Bieber",
+    "Billie Eilish",
+    "Eminem",
+    "Kanye West"
+]
 
-headers = {
-    "User-Agent": "Mozilla/5.0"
-}
+# posição no ranking
+ranking_artistas = [1,2,3,4,5,6,7,8,9,10]
 
-response = requests.get(url, headers=headers)
+# Criar DataFrame artistas
+df_artistas = pd.DataFrame({
+    "Artist": artistas,
+    "Rank": ranking_artistas
+})
 
-# Ler o HTML
-soup = BeautifulSoup(response.text, "html.parser")
+# ==========================================
+# TOP MÚSICAS MAIS STREAMADAS
+# ==========================================
 
-# Pegar tabela
-tabela = soup.find("table")
+musicas = [
+    "Blinding Lights",
+    "Shape of You",
+    "Sweater Weather",
+    "Starboy",
+    "As It Was"
+]
 
-# Transformar em DataFrame
-df = pd.read_html(str(tabela))[0]
+ranking_musicas = [1,2,3,4,5]
 
-# =========================
-# LIMPAR DADOS
-# =========================
+# Criar DataFrame músicas
+df_musicas = pd.DataFrame({
+    "Music": musicas,
+    "Rank": ranking_musicas
+})
 
-# Mostrar colunas
-print(df.columns)
+# ==========================================
+# SALVAR CSVs
+# ==========================================
 
-# Renomear colunas (caso necessário)
-df.columns = ["Rank", "Artist", "Listeners", "Daily Trend", "Peak", "LW"]
+df_artistas.to_csv("top_artistas_spotify.csv", index=False)
+df_musicas.to_csv("top_musicas_spotify.csv", index=False)
 
-# Remover vírgulas dos números
-df["Listeners"] = (
-    df["Listeners"]
-    .astype(str)
-    .str.replace(",", "", regex=False)
-    .astype(int)
+print("CSVs salvos com sucesso!")
+
+# ==========================================
+# GRÁFICO ARTISTAS
+# ==========================================
+
+ax = df_artistas.plot(
+    kind='bar',
+    x='Artist',
+    y='Rank',
+    figsize=(12,5),
+    legend=False,
+    title='Top 10 artistas mais streamados do Spotify'
 )
 
-# =========================
-# ESCOLHER TOP 10
-# =========================
+# inverter eixo (#1 no topo)
+ax.invert_yaxis()
 
-top10 = df.head(10)
-
-# =========================
-# SALVAR CSV
-# =========================
-
-top10.to_csv("spotify_top10.csv", index=False)
-
-print("CSV salvo com sucesso!")
-
-# =========================
-# CRIAR GRÁFICO
-# =========================
-
-ax = top10.plot(
-    kind="bar",
-    x="Artist",
-    y="Listeners",
-    figsize=(12, 6),
-    title="Top 10 artistas com mais ouvintes mensais no Spotify",
-    legend=False
-)
-
-# Nome dos eixos
 plt.xlabel("Artistas")
-plt.ylabel("Ouvintes mensais")
+plt.ylabel("Posição no ranking")
 
-# Girar nomes
-plt.xticks(rotation=45)
-
-# Tirar bordas
+# remover bordas
 plt.gca().spines[['top', 'right']].set_visible(False)
 
-# Formatar eixo Y em milhões
-ax.yaxis.set_major_formatter(
-    ticker.FuncFormatter(lambda x, pos: f'{x/1e6:.0f}M')
-)
+# girar nomes
+plt.xticks(rotation=45)
 
-# Ajustar layout
 plt.tight_layout()
 
-# Mostrar gráfico
+plt.show()
+
+# ==========================================
+# GRÁFICO MÚSICAS
+# ==========================================
+
+ax = df_musicas.plot(
+    kind='bar',
+    x='Music',
+    y='Rank',
+    figsize=(10,5),
+    legend=False,
+    title='Top músicas mais streamadas do Spotify'
+)
+
+# inverter eixo
+ax.invert_yaxis()
+
+plt.xlabel("Músicas")
+plt.ylabel("Posição no ranking")
+
+# remover bordas
+plt.gca().spines[['top', 'right']].set_visible(False)
+
+# girar nomes
+plt.xticks(rotation=20)
+
+plt.tight_layout()
+
 plt.show()
