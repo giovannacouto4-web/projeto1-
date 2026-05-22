@@ -1,1 +1,1 @@
-pip install pandas matplotlib beautifulsoup4 requests lxml
+pip install pandas matplotlib
