@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
  
-df = pd.read_csv("dados_moda.csv")
+df = pd.read_csv("marcas_moda.csv")
  
 st.title("👗 Marcas de Moda")
  
