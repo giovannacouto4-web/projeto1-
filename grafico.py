@@ -12,5 +12,5 @@ variavel = st.selectbox("Escolha o que comparar:", [
     "preco_medio_brl"
 ])
  
-st.bar_chart(df.set_index("marca")[variavel])
+st.bar_chart(df.set_index("marca_moda.csv")[variavel])
  
