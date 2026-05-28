@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
  
-df = pd.read_csv("marcas_moda.csv")
+df = pd.read_csv("marcas_moda.csv", encoding="utf-8-sig")
+df.columns = df.columns.str.strip()
  
 st.title("👗 Marcas de Moda")
  
@@ -12,5 +13,6 @@ variavel = st.selectbox("Escolha o que comparar:", [
     "preco_medio_brl"
 ])
  
-st.bar_chart(df.set_index("marca_moda.csv")[variavel])
+st.bar_chart(df.set_index("marca")[variavel])
+ 
  
