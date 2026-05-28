@@ -4,7 +4,10 @@ import plotly.express as px
 
 st.set_page_config(page_title="Marcas de Moda")
 
-df = pd.read_csv("dados_moda.csv")
+df = pd.read_csv("dados_moda.csv", sep=";")
+
+# remove espaços extras dos nomes das colunas
+df.columns = df.columns.str.strip()
 
 st.title("Análise de Marcas de Moda")
 
@@ -28,8 +31,7 @@ colunas = {
 fig = px.bar(
     df,
     x="marca",
-    y=colunas[opcao],
-    color="marca"
+    y=colunas[opcao]
 )
 
 st.plotly_chart(fig, use_container_width=True)
