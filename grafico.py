@@ -9,4 +9,4 @@ variavel = st.selectbox("Escolha a variável:", [
     "temperatura_media_c", "umidade_relativa_pct", "precipitacao_mm"
 ])
 
-st.line_chart(df.set_index("data")[variavel])
+st.bar_chart(df.set_index("data")[variavel])
