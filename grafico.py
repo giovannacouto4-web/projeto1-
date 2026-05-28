@@ -4,7 +4,7 @@ import plotly.express as px
 
 st.set_page_config(page_title="Marcas de Moda")
 
-df = pd.read_csv("marcas_moda.csv")
+df = pd.read_csv("dados_moda.csv")
 
 st.title("Análise de Marcas de Moda")
 
