@@ -17,13 +17,13 @@ opcao = st.selectbox(
 
 explicacoes = {
     "Temperatura (°C)": {
-        "titulo": "🌡️ Temperatura média do mês, em graus Celsius",
+        "titulo": "Temperatura média do mês, em graus Celsius",
         "texto": "Cada barra mostra o quanto fez calor (ou frio) naquele mês. "
                  "Barras mais altas = meses mais quentes. Barras mais baixas = meses mais frescos.",
         "cor": "#e63946"
     },
     "Umidade (%)": {
-        "titulo": "💧 Umidade do ar, em porcentagem",
+        "titulo": "Umidade do ar, em porcentagem",
         "texto": "A umidade mostra o quanto de água tem no ar.",
         "cor": "#457b9d"
     },
