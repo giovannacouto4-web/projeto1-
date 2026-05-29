@@ -1,4 +1,3 @@
-```python id="9t2x4q"
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -33,4 +32,3 @@ fig = px.bar(
 
 # mostrar gráfico
 st.plotly_chart(fig, use_container_width=True)
-```
