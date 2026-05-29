@@ -7,7 +7,7 @@ df.columns = df.columns.str.strip()
  
 st.write("Colunas encontradas:", df.columns.tolist())
  
-st.title("👗 Marcas de Moda")
+st.title("Gráfico de Marcas de Moda")
  
 colunas_disponiveis = [c for c in df.columns if c != "marca"]
  
