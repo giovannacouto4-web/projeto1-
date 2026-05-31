@@ -72,7 +72,7 @@ st.markdown("""
 # Sidebar — configuração da API
 # ─────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("### ⚙️ Configuração")
+    st.markdown("### Configuração")
     api_key = st.text_input(
         "Google Gemini API Key",
         type="password",
@@ -125,7 +125,7 @@ col1, col2 = st.columns(2)
 
 with col1:
     objetivo = st.selectbox(
-        "🎯 Objetivo da publicação",
+        "Objetivo da publicação",
         options=[
             "Vender ou promover um produto/serviço",
             "Engajar e interagir com a audiência",
@@ -136,7 +136,7 @@ with col1:
 
 with col2:
     rede_social = st.selectbox(
-        "📱 Rede social",
+        "Rede social",
         options=["Instagram", "TikTok", "LinkedIn", "Twitter/X"]
     )
 
@@ -152,7 +152,7 @@ col3, col4 = st.columns(2)
 
 with col3:
     tom = st.selectbox(
-        "🎨 Tom desejado",
+        "Tom desejado",
         options=[
             "Engraçado e descontraído",
             "Profissional e formal",
@@ -163,7 +163,7 @@ with col3:
 
 with col4:
     publico = st.selectbox(
-        "👥 Público-alvo",
+        "Público-alvo",
         options=[
             "Jovens (18–25 anos)",
             "Adultos (26–40 anos)",
