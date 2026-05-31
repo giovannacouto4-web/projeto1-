@@ -1,0 +1,5 @@
+# Nunca suba sua chave de API para o GitHub!
+.streamlit/secrets.toml
+__pycache__/
+*.pyc
+.env
