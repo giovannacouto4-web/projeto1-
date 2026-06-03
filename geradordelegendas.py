@@ -133,7 +133,7 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("**Como usar:**")
     st.markdown("1. Envie uma imagem (opcional)")
-    st.markdown("2. Responda o quiz")
+    st.markdown("2. Responda o questionário")
     st.markdown("3. Clique em **Gerar Legendas**")
     st.markdown("4. Copie a legenda favorita!")
     st.markdown("---")
@@ -144,7 +144,7 @@ with st.sidebar:
 # Título
 # ─────────────────────────────────────────────
 st.markdown('<p class="main-title">✦ Gerador de Legendas</p>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">Envie sua imagem e responda o quiz para receber legendas personalizadas com IA</p>', unsafe_allow_html=True)
+st.markdown('<p class="subtitle">Envie sua imagem e responda o questionário para receber legendas personalizadas com IA</p>', unsafe_allow_html=True)
 
 st.divider()
 
