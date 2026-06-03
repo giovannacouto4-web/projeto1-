@@ -230,7 +230,7 @@ with col4:
     )
 
 contexto = st.text_area(
-    "💬 Contexto extra (opcional)",
+    "Contexto extra (opcional)",
     placeholder="Ex: lançamento de produto, promoção de fim de semana, dia do cliente...",
     height=90,
 )
@@ -325,11 +325,11 @@ if st.button("✨ Gerar Legendas", type="primary", use_container_width=True):
                 with st.expander(f"✦ {leg['estilo']}", expanded=True):
 
                     # Preview do post
-                    st.markdown("**👁️ Pré-visualização do post**")
+                    st.markdown("**Pré-visualização do post**")
                     render_post_preview(leg["texto"], hashtags, image_b64)
 
                     # Caixa de texto com a legenda (fácil de copiar)
-                    st.markdown("**📋 Legenda completa**")
+                    st.markdown("**Legenda completa**")
                     legenda_completa = leg["texto"] + "\n\n" + " ".join(hashtags)
                     st.text_area(
                         label="",
@@ -355,7 +355,7 @@ if st.button("✨ Gerar Legendas", type="primary", use_container_width=True):
 
             # ── Histórico / CSV ──
             st.divider()
-            st.markdown("**📊 Histórico desta geração**")
+            st.markdown("**Histórico desta geração**")
             df = pd.DataFrame(legendas)
             df.insert(0, "Rede Social", rede_social)
             df.insert(1, "Tom", tom)
@@ -364,7 +364,7 @@ if st.button("✨ Gerar Legendas", type="primary", use_container_width=True):
 
             csv = df.to_csv(index=False).encode("utf-8")
             st.download_button(
-                label="⬇️ Baixar como CSV",
+                label="Baixar como CSV",
                 data=csv,
                 file_name="legendas_geradas.csv",
                 mime="text/csv",
