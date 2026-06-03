@@ -4,6 +4,7 @@ import pandas as pd
 from PIL import Image
 import json
 import io
+import base64
 
 # ─────────────────────────────────────────────
 # Configuração da página
@@ -16,6 +17,12 @@ st.set_page_config(
 
 st.markdown("""
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    html, body, [class*="css"] {
+        font-family: 'Inter', sans-serif;
+    }
+
     .main-title {
         font-size: 2rem;
         font-weight: 700;
@@ -64,27 +71,71 @@ st.markdown("""
         color: #aaa;
         margin-bottom: 0.5rem;
     }
+
+    /* Preview do post estilo Instagram */
+    .post-preview-card {
+        background: #fff;
+        border: 1px solid #dbdbdb;
+        border-radius: 12px;
+        overflow: hidden;
+        max-width: 400px;
+        margin: 0 auto 1.5rem auto;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    .post-preview-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .post-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7F77DD, #c084fc);
+    }
+    .post-username {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #1a1a1a;
+    }
+    .post-preview-image {
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: cover;
+        display: block;
+    }
+    .post-preview-caption {
+        padding: 12px 14px;
+        font-size: 0.85rem;
+        line-height: 1.5;
+        color: #1a1a1a;
+        border-top: 1px solid #f0f0f0;
+    }
+    .post-preview-caption b {
+        font-weight: 600;
+    }
+    .post-preview-hashtags {
+        padding: 0 14px 12px;
+        font-size: 0.8rem;
+        color: #534AB7;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 
 # ─────────────────────────────────────────────
-# Sidebar — configuração da API
+# Sidebar — informações
 # ─────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("### Configuração")
-    api_key = st.text_input(
-        "Google Gemini API Key",
-        type="password",
-        placeholder="Cole sua chave aqui...",
-        help="Obtenha sua chave em: https://aistudio.google.com/app/apikey"
-    )
+    st.markdown("### ✦ Gerador de Legendas")
     st.markdown("---")
     st.markdown("**Como usar:**")
-    st.markdown("1. Insira sua API Key do Gemini")
-    st.markdown("2. Envie uma imagem (opcional)")
-    st.markdown("3. Responda o quiz")
-    st.markdown("4. Clique em **Gerar Legendas**")
+    st.markdown("1. Envie uma imagem (opcional)")
+    st.markdown("2. Responda o quiz")
+    st.markdown("3. Clique em **Gerar Legendas**")
+    st.markdown("4. Copie a legenda favorita!")
     st.markdown("---")
     st.markdown("*Feito com Streamlit + Google Gemini*")
 
@@ -109,9 +160,15 @@ uploaded_file = st.file_uploader(
 )
 
 image_obj = None
+image_b64 = None
+
 if uploaded_file:
     image_obj = Image.open(uploaded_file)
     st.image(image_obj, caption="Imagem carregada", use_column_width=True)
+    # Converter para base64 para usar no preview HTML
+    buf = io.BytesIO()
+    image_obj.save(buf, format="PNG")
+    image_b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
 
 st.divider()
 
@@ -182,9 +239,40 @@ st.divider()
 
 
 # ─────────────────────────────────────────────
+# Função auxiliar — preview do post
+# ─────────────────────────────────────────────
+def render_post_preview(legenda_texto, hashtags, image_b64=None, username="seu_perfil"):
+    hashtags_str = " ".join(hashtags) if hashtags else ""
+    img_html = ""
+    if image_b64:
+        img_html = f'<img class="post-preview-image" src="data:image/png;base64,{image_b64}" />'
+    else:
+        img_html = '<div style="width:100%;aspect-ratio:1;background:linear-gradient(135deg,#EEEDFE,#c4b5fd);display:flex;align-items:center;justify-content:center;font-size:3rem;">🖼️</div>'
+
+    st.markdown(f"""
+    <div class="post-preview-card">
+        <div class="post-preview-header">
+            <div class="post-avatar"></div>
+            <span class="post-username">{username}</span>
+        </div>
+        {img_html}
+        <div class="post-preview-caption">
+            <b>{username}</b> {legenda_texto}
+        </div>
+        <div class="post-preview-hashtags">{hashtags_str}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+# ─────────────────────────────────────────────
 # Função principal — gerar legendas
 # ─────────────────────────────────────────────
-def gerar_legendas(api_key, objetivo, rede_social, tom, publico, contexto, image_obj):
+def gerar_legendas(objetivo, rede_social, tom, publico, contexto, image_obj):
+    # ⚠️  Configure sua API key aqui:
+    # Opção 1 – variável de ambiente:  import os; api_key = os.environ["GEMINI_API_KEY"]
+    # Opção 2 – hardcoded (só para testes): api_key = "SUA_CHAVE_AQUI"
+    api_key = "COLOQUE_SUA_CHAVE_AQUI"
+
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel("gemini-1.5-flash")
 
@@ -220,60 +308,69 @@ Responda APENAS em JSON válido, sem markdown, sem explicações extras. Formato
 # Botão gerar + exibição dos resultados
 # ─────────────────────────────────────────────
 if st.button("✨ Gerar Legendas", type="primary", use_container_width=True):
-    if not api_key:
-        st.error("❌ Insira sua Google Gemini API Key na barra lateral para continuar.")
-    else:
-        with st.spinner("Gerando suas legendas com IA..."):
-            try:
-                resultado = gerar_legendas(
-                    api_key, objetivo, rede_social, tom, publico, contexto, image_obj
-                )
+    with st.spinner("Gerando suas legendas com IA..."):
+        try:
+            resultado = gerar_legendas(
+                objetivo, rede_social, tom, publico, contexto, image_obj
+            )
 
-                st.divider()
-                st.markdown('<p class="step-header">Passo 4 — Suas legendas</p>', unsafe_allow_html=True)
+            hashtags = resultado.get("hashtags", [])
+            legendas = resultado.get("legendas", [])
 
-                # Exibir legendas
-                for leg in resultado.get("legendas", []):
-                    st.markdown(f"""
-                    <div class="legenda-box">
-                        <div class="legenda-estilo">{leg['estilo']}</div>
-                        <div class="legenda-texto">{leg['texto']}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
+            st.divider()
+            st.markdown('<p class="step-header">Passo 4 — Suas legendas</p>', unsafe_allow_html=True)
 
-                    st.code(leg["texto"], language=None)
+            # ── Exibir cada legenda com preview e botão copiar ──
+            for i, leg in enumerate(legendas):
+                with st.expander(f"✦ {leg['estilo']}", expanded=True):
 
-                # Exibir hashtags
-                hashtags = resultado.get("hashtags", [])
-                if hashtags:
-                    st.markdown("**#️⃣ Hashtags sugeridas**")
-                    pills_html = "".join(
-                        f'<span class="hashtag-pill">{h}</span>' for h in hashtags
+                    # Preview do post
+                    st.markdown("**👁️ Pré-visualização do post**")
+                    render_post_preview(leg["texto"], hashtags, image_b64)
+
+                    # Caixa de texto com a legenda (fácil de copiar)
+                    st.markdown("**📋 Legenda completa**")
+                    legenda_completa = leg["texto"] + "\n\n" + " ".join(hashtags)
+                    st.text_area(
+                        label="",
+                        value=legenda_completa,
+                        height=130,
+                        key=f"legenda_{i}",
+                        help="Selecione o texto e copie (Ctrl+A, Ctrl+C)"
                     )
-                    st.markdown(f'<div style="margin:0.5rem 0 1rem">{pills_html}</div>', unsafe_allow_html=True)
 
-                    hashtags_text = " ".join(hashtags)
-                    st.code(hashtags_text, language=None)
+                    # Botão de copiar (via st.code — clique no ícone de cópia)
+                    st.caption("Ou use o botão de cópia abaixo:")
+                    st.code(legenda_completa, language=None)
 
-                # Salvar histórico em DataFrame (Pandas)
-                st.divider()
-                st.markdown("**📊 Histórico desta geração**")
-                df = pd.DataFrame(resultado.get("legendas", []))
-                df.insert(0, "Rede Social", rede_social)
-                df.insert(1, "Tom", tom)
-                df.insert(2, "Objetivo", objetivo)
-                st.dataframe(df, use_container_width=True)
-
-                csv = df.to_csv(index=False).encode("utf-8")
-                st.download_button(
-                    label="⬇️ Baixar como CSV",
-                    data=csv,
-                    file_name="legendas_geradas.csv",
-                    mime="text/csv",
+            # ── Hashtags separadas ──
+            if hashtags:
+                st.markdown("---")
+                st.markdown("**#️⃣ Hashtags sugeridas**")
+                pills_html = "".join(
+                    f'<span class="hashtag-pill">{h}</span>' for h in hashtags
                 )
+                st.markdown(f'<div style="margin:0.5rem 0 1rem">{pills_html}</div>', unsafe_allow_html=True)
+                st.code(" ".join(hashtags), language=None)
 
-            except json.JSONDecodeError:
-                st.error("❌ Erro ao interpretar a resposta da IA. Tente novamente.")
-            except Exception as e:
-                st.error(f"❌ Erro: {str(e)}")
+            # ── Histórico / CSV ──
+            st.divider()
+            st.markdown("**📊 Histórico desta geração**")
+            df = pd.DataFrame(legendas)
+            df.insert(0, "Rede Social", rede_social)
+            df.insert(1, "Tom", tom)
+            df.insert(2, "Objetivo", objetivo)
+            st.dataframe(df, use_container_width=True)
 
+            csv = df.to_csv(index=False).encode("utf-8")
+            st.download_button(
+                label="⬇️ Baixar como CSV",
+                data=csv,
+                file_name="legendas_geradas.csv",
+                mime="text/csv",
+            )
+
+        except json.JSONDecodeError:
+            st.error("❌ Erro ao interpretar a resposta da IA. Tente novamente.")
+        except Exception as e:
+            st.error(f"❌ Erro: {str(e)}")
