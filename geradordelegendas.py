@@ -271,7 +271,7 @@ def gerar_legendas(objetivo, rede_social, tom, publico, contexto, image_obj):
     # ⚠️  Configure sua API key aqui:
     # Opção 1 – variável de ambiente:  import os; api_key = os.environ["GEMINI_API_KEY"]
     # Opção 2 – hardcoded (só para testes): api_key = "SUA_CHAVE_AQUI"
-    api_key = "AQ.Ab8RN6L1CNYAn4PfztBK6gJHkABXZTiwZz1SV4eUUfpCY1FGkg"
+    api_key = "AQ.Ab8RN6LzKp5iDTN9Xij7QU6KkKi60-Be-TbCdX7YXEikmgiqtg"
 
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel("gemini-1.5-flash")
