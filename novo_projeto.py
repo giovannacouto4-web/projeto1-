@@ -1,14 +1,8 @@
 import streamlit as st
-import google.generativeai as genai
+from groq import Groq
 
 # CONFIGURAÇÃO DA PÁGINA
 st.set_page_config(page_title="Sem dúvidas!")
-
-# API KEY
-genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-
-# MODELO
-MODEL_ID = "gemini-1.5-flash"
 
 # TÍTULO
 st.title("Sem dúvidas!")
