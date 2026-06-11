@@ -9,6 +9,7 @@ import base64
 client = Groq(
     api_key=st.secrets["GROQ_API_KEY"]
 )
+
 # ─────────────────────────────────────────────
 # Configuração da página
 # ─────────────────────────────────────────────
@@ -245,7 +246,6 @@ st.divider()
 # ─────────────────────────────────────────────
 def render_post_preview(legenda_texto, hashtags, image_b64=None, username="seu_perfil"):
     hashtags_str = " ".join(hashtags) if hashtags else ""
-    img_html = ""
     if image_b64:
         img_html = f'<img class="post-preview-image" src="data:image/png;base64,{image_b64}" />'
     else:
@@ -310,7 +310,7 @@ Formato:
     "#hashtag6"
   ]
 }}
-"""  
+"""
 
     if image_b64:
         content = [
@@ -325,10 +325,10 @@ Formato:
                 "text": prompt
             }
         ]
-        model = "meta-llama/llama-4-scout-17b-16e-instruct"  
+        model = "meta-llama/llama-4-scout-17b-16e-instruct"
     else:
         content = prompt
-        model = "llama-3.3-70b-versatile"  
+        model = "llama-3.3-70b-versatile"
 
     response = client.chat.completions.create(
         model=model,
@@ -350,19 +350,18 @@ Formato:
         raise
 
 
-
 # ─────────────────────────────────────────────
 # Botão gerar + exibição dos resultados
 # ─────────────────────────────────────────────
 if st.button("✨ Gerar Legendas", type="primary", use_container_width=True):
     with st.spinner("Gerando suas legendas com IA..."):
-    try:
-        resultado = gerar_legendas(
-    objetivo, rede_social, tom, publico, contexto, image_b64
-)
+        try:
+            resultado = gerar_legendas(
+                objetivo, rede_social, tom, publico, contexto, image_b64
+            )
 
-        hashtags = resultado.get("hashtags", [])
-        legendas = resultado.get("legendas", [])
+            hashtags = resultado.get("hashtags", [])
+            legendas = resultado.get("legendas", [])
 
             st.divider()
             st.markdown('<p class="step-header">Passo 4 — Suas legendas</p>', unsafe_allow_html=True)
@@ -421,3 +420,4 @@ if st.button("✨ Gerar Legendas", type="primary", use_container_width=True):
             st.error("❌ Erro ao interpretar a resposta da IA. Tente novamente.")
         except Exception as e:
             st.error(f"❌ Erro: {str(e)}")
+
