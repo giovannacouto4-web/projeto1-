@@ -361,8 +361,18 @@ if st.button("✨ Gerar Legendas", type="primary", use_container_width=True):
     objetivo, rede_social, tom, publico, contexto, image_b64
 )
 
-st.write("TIPO:", type(resultado))
-st.write("RESULTADO:", resultado)
+raw = response.choices[0].message.content
+
+try:
+    st.write("RAW:", raw)
+    dados = json.loads(raw)
+    st.write("DADOS:", dados)
+    return dados
+except Exception as e:
+    st.write("Resposta recebida:")
+    st.code(raw)
+    st.write("ERRO:", str(e))
+    raise
 
 hashtags = resultado.get("hashtags", [])
 
