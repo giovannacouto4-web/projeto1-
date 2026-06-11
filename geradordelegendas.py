@@ -6,6 +6,9 @@ import json
 import io
 import base64
 
+client = Groq(
+    api_key=st.secrets["GROQ_API_KEY"]
+)
 # ─────────────────────────────────────────────
 # Configuração da página
 # ─────────────────────────────────────────────
@@ -159,6 +162,7 @@ uploaded_file = st.file_uploader(
     help="A IA irá analisar a imagem para gerar legendas mais contextuais"
 )
 
+image_obj = None
 image_b64 = None
 
 if uploaded_file:
@@ -266,9 +270,47 @@ def render_post_preview(legenda_texto, hashtags, image_b64=None, username="seu_p
 # Função principal — gerar legendas
 # ─────────────────────────────────────────────
 def gerar_legendas(objetivo, rede_social, tom, publico, contexto, image_b64):
-    client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-    prompt = f"""..."""  
+    prompt = f"""
+Você é um especialista em marketing digital e copywriting.
+
+Crie 3 legendas para redes sociais.
+
+Objetivo: {objetivo}
+Rede social: {rede_social}
+Tom: {tom}
+Público-alvo: {publico}
+Contexto: {contexto}
+
+Retorne SOMENTE JSON válido.
+
+Formato:
+
+{{
+  "legendas": [
+    {{
+      "estilo": "Direto ao ponto",
+      "texto": "Legenda aqui"
+    }},
+    {{
+      "estilo": "Storytelling",
+      "texto": "Legenda aqui"
+    }},
+    {{
+      "estilo": "Engajamento",
+      "texto": "Legenda aqui"
+    }}
+  ],
+  "hashtags": [
+    "#hashtag1",
+    "#hashtag2",
+    "#hashtag3",
+    "#hashtag4",
+    "#hashtag5",
+    "#hashtag6"
+  ]
+}}
+"""  
 
     if image_b64:
         content = [
@@ -289,13 +331,15 @@ def gerar_legendas(objetivo, rede_social, tom, publico, contexto, image_b64):
         model = "llama-3.3-70b-versatile"  
 
     response = client.chat.completions.create(
-        model=model,
-        max_tokens=1000,
-        messages=[
-            {"role": "user", "content": content}
-        ]
-    )
-
+    model=model,
+    messages=[
+        {"role": "user", "content": content}
+    ],
+    temperature=0.8,
+    max_tokens=1500,
+    response_format={"type": "json_object"}
+)
+    
     raw = response.choices[0].message.content.strip().replace("```json", "").replace("```", "").strip()
     return json.loads(raw)
 
