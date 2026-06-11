@@ -344,7 +344,7 @@ raw = response.choices[0].message.content
 
 try:
         return json.loads(raw)
-    except Exception:
+except Exception:
         st.write("Resposta recebida:")
         st.code(raw)
         raise
