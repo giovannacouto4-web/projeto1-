@@ -342,7 +342,7 @@ response = client.chat.completions.create(
 
 raw = response.choices[0].message.content
 
-    try:
+try:
         return json.loads(raw)
     except Exception:
         st.write("Resposta recebida:")
