@@ -52,12 +52,17 @@ Responda SOMENTE com a opção escolhida.
 """
 
     try:
+        client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-        model = genai.GenerativeModel(MODEL_ID)
+        resposta = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            max_tokens=100,
+            messages=[
+                {"role": "user", "content": prompt}
+            ]
+        )
 
-        resposta = model.generate_content(prompt)
-
-        escolha = resposta.text.strip()
+        escolha = resposta.choices[0].message.content.strip()
 
         st.session_state.ultima_escolha = escolha
         st.session_state.historico.append(escolha)
