@@ -140,7 +140,7 @@ with st.sidebar:
     st.markdown("3. Clique em **Gerar Legendas**")
     st.markdown("4. Copie a legenda favorita!")
     st.markdown("---")
-    st.markdown("*Feito com Streamlit + Google Gemini*")
+    st.markdown("*Feito com Streamlit + Groq*")
 
 
 # ─────────────────────────────────────────────
@@ -340,8 +340,14 @@ Formato:
     response_format={"type": "json_object"}
 )
     
-    raw = response.choices[0].message.content.strip().replace("```json", "").replace("```", "").strip()
+    raw = response.choices[0].message.content
+
+try:
     return json.loads(raw)
+except Exception:
+    st.write("Resposta recebida:")
+    st.code(raw)
+    raise
 
 
 
