@@ -331,23 +331,23 @@ Formato:
         model = "llama-3.3-70b-versatile"  
 
 response = client.chat.completions.create(
-    model=model,
-    messages=[
-        {"role": "user", "content": content}
-    ],
-    temperature=0.8,
-    max_tokens=1500,
-    response_format={"type": "json_object"}
-)
-    
+        model=model,
+        messages=[
+            {"role": "user", "content": content}
+        ],
+        temperature=0.8,
+        max_tokens=1500,
+        response_format={"type": "json_object"}
+    )
+
     raw = response.choices[0].message.content
 
     try:
-    return json.loads(raw)
-except Exception:
-    st.write("Resposta recebida:")
-    st.code(raw)
-    raise
+        return json.loads(raw)
+    except Exception:
+        st.write("Resposta recebida:")
+        st.code(raw)
+        raise
 
 
 
