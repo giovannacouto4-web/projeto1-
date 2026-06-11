@@ -159,13 +159,11 @@ uploaded_file = st.file_uploader(
     help="A IA irá analisar a imagem para gerar legendas mais contextuais"
 )
 
-image_obj = None
 image_b64 = None
 
 if uploaded_file:
     image_obj = Image.open(uploaded_file)
     st.image(image_obj, caption="Imagem carregada", use_column_width=True)
-    # Converter para base64 para usar no preview HTML
     buf = io.BytesIO()
     image_obj.save(buf, format="PNG")
     image_b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
@@ -267,41 +265,40 @@ def render_post_preview(legenda_texto, hashtags, image_b64=None, username="seu_p
 # ─────────────────────────────────────────────
 # Função principal — gerar legendas
 # ─────────────────────────────────────────────
-def gerar_legendas(objetivo, rede_social, tom, publico, contexto, image_obj):
-    # ⚠️  Configure sua API key aqui:
-    # Opção 1 – variável de ambiente:  import os; api_key = os.environ["GEMINI_API_KEY"]
-    # Opção 2 – hardcoded (só para testes): api_key = "SUA_CHAVE_AQUI"
-    api_key = st.secrets["GEMINI_API_KEY"]
+def gerar_legendas(objetivo, rede_social, tom, publico, contexto, image_b64):
+    client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    prompt = f"""..."""  
 
-    prompt = f"""Você é um especialista em marketing digital e redes sociais.
-Com base nas informações abaixo{' e na imagem fornecida' if image_obj else ''}, gere 3 legendas criativas e personalizadas para um post.
-
-Objetivo: {objetivo}
-Rede social: {rede_social}
-Tom: {tom}
-Público-alvo: {publico}
-{f'Contexto adicional: {contexto}' if contexto.strip() else ''}
-
-Responda APENAS em JSON válido, sem markdown, sem explicações extras. Formato exato:
-{{
-  "legendas": [
-    {{ "estilo": "Nome do estilo (ex: Direto ao ponto)", "texto": "Texto da legenda" }},
-    {{ "estilo": "Nome do estilo (ex: Storytelling)", "texto": "Texto da legenda" }},
-    {{ "estilo": "Nome do estilo (ex: Com chamada para ação)", "texto": "Texto da legenda" }}
-  ],
-  "hashtags": ["#exemplo1", "#exemplo2", "#exemplo3", "#exemplo4", "#exemplo5", "#exemplo6"]
-}}"""
-
-    if image_obj:
-        response = model.generate_content([prompt, image_obj])
+    if image_b64:
+        content = [
+            {
+                "type": "image_url",
+                "image_url": {
+                    "url": f"data:image/png;base64,{image_b64}"
+                }
+            },
+            {
+                "type": "text",
+                "text": prompt
+            }
+        ]
+        model = "meta-llama/llama-4-scout-17b-16e-instruct"  
     else:
-        response = model.generate_content(prompt)
+        content = prompt
+        model = "llama-3.3-70b-versatile"  
 
-    raw = response.text.strip().replace("```json", "").replace("```", "").strip()
+    response = client.chat.completions.create(
+        model=model,
+        max_tokens=1000,
+        messages=[
+            {"role": "user", "content": content}
+        ]
+    )
+
+    raw = response.choices[0].message.content.strip().replace("```json", "").replace("```", "").strip()
     return json.loads(raw)
+
 
 
 # ─────────────────────────────────────────────
@@ -310,9 +307,10 @@ Responda APENAS em JSON válido, sem markdown, sem explicações extras. Formato
 if st.button("✨ Gerar Legendas", type="primary", use_container_width=True):
     with st.spinner("Gerando suas legendas com IA..."):
         try:
-            resultado = gerar_legendas(
-                objetivo, rede_social, tom, publico, contexto, image_obj
+           resultado = gerar_legendas(
+                objetivo, rede_social, tom, publico, contexto, image_b64
             )
+
 
             hashtags = resultado.get("hashtags", [])
             legendas = resultado.get("legendas", [])
