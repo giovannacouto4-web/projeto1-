@@ -340,7 +340,7 @@ response = client.chat.completions.create(
         response_format={"type": "json_object"}
     )
 
-    raw = response.choices[0].message.content
+raw = response.choices[0].message.content
 
     try:
         return json.loads(raw)
