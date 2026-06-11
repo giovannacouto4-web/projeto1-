@@ -330,7 +330,7 @@ Formato:
         content = prompt
         model = "llama-3.3-70b-versatile"  
 
-response = client.chat.completions.create(
+    response = client.chat.completions.create(
         model=model,
         messages=[
             {"role": "user", "content": content}
@@ -340,11 +340,11 @@ response = client.chat.completions.create(
         response_format={"type": "json_object"}
     )
 
-raw = response.choices[0].message.content
+    raw = response.choices[0].message.content
 
-try:
+    try:
         return json.loads(raw)
-except Exception:
+    except Exception:
         st.write("Resposta recebida:")
         st.code(raw)
         raise
@@ -360,22 +360,6 @@ if st.button("✨ Gerar Legendas", type="primary", use_container_width=True):
            resultado = gerar_legendas(
     objetivo, rede_social, tom, publico, contexto, image_b64
 )
-
-raw = response.choices[0].message.content
-
-try:
-    st.write("RAW:", raw)
-    dados = json.loads(raw)
-    st.write("DADOS:", dados)
-    return dados
-except Exception as e:
-    st.write("Resposta recebida:")
-    st.code(raw)
-    st.write("ERRO:", str(e))
-    raise
-
-hashtags = resultado.get("hashtags", [])
-
 
             hashtags = resultado.get("hashtags", [])
             legendas = resultado.get("legendas", [])
