@@ -356,7 +356,7 @@ except Exception:
 # ─────────────────────────────────────────────
 if st.button("✨ Gerar Legendas", type="primary", use_container_width=True):
     with st.spinner("Gerando suas legendas com IA..."):
-        try:
+    try:
            resultado = gerar_legendas(
                 objetivo, rede_social, tom, publico, contexto, image_b64
             )
