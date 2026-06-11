@@ -356,13 +356,13 @@ Formato:
 # ─────────────────────────────────────────────
 if st.button("✨ Gerar Legendas", type="primary", use_container_width=True):
     with st.spinner("Gerando suas legendas com IA..."):
-        try:
-           resultado = gerar_legendas(
+    try:
+        resultado = gerar_legendas(
     objetivo, rede_social, tom, publico, contexto, image_b64
 )
 
-            hashtags = resultado.get("hashtags", [])
-            legendas = resultado.get("legendas", [])
+        hashtags = resultado.get("hashtags", [])
+        legendas = resultado.get("legendas", [])
 
             st.divider()
             st.markdown('<p class="step-header">Passo 4 — Suas legendas</p>', unsafe_allow_html=True)
