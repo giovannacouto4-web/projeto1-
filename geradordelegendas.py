@@ -278,7 +278,7 @@ def gerar_legendas(objetivo, rede_social, tom, publico, contexto, image_b64, var
     import random
     seed = random.randint(100000, 999999)
 
-    instrucao_variacao = f"\n(ID interno da requisição: {seed} — ignore este número, apenas use-o como referência de unicidade.)\n"
+    instrucao_variacao = ""
 
     if variacao > 0 and legendas_anteriores:
         textos_anteriores = "\n".join(f"- {leg.get('texto', '')}" for leg in legendas_anteriores)
@@ -291,6 +291,7 @@ def gerar_legendas(objetivo, rede_social, tom, publico, contexto, image_b64, var
         )
 
     prompt = f"""
+{instrucao_variacao}
 Você é um especialista em marketing digital e copywriting.
 
 Crie 3 legendas para redes sociais.
@@ -300,7 +301,7 @@ Rede social: {rede_social}
 Tom: {tom}
 Público-alvo: {publico}
 Contexto: {contexto}
-{instrucao_variacao}
+
 Retorne SOMENTE JSON válido.
 
 Formato:
@@ -354,8 +355,10 @@ Formato:
         messages=[
             {"role": "user", "content": content}
         ],
-        temperature=min(0.8 + variacao * 0.15, 1.2),
+        temperature=min(0.9 + variacao * 0.2, 1.5),
+        top_p=0.95,
         max_tokens=1500,
+        seed=seed,
         response_format={"type": "json_object"}
     )
 
@@ -375,6 +378,9 @@ Formato:
 if "resultado" not in st.session_state:
     st.session_state.resultado = None
 
+if "historico_legendas" not in st.session_state:
+    st.session_state.historico_legendas = []
+
 if st.session_state.resultado is None:
     gerar_clicado = st.button("✨ Gerar Legendas", type="primary", use_container_width=True)
 else:
@@ -387,6 +393,7 @@ if gerar_clicado:
                 objetivo, rede_social, tom, publico, contexto, image_b64
             )
             st.session_state.resultado = resultado
+            st.session_state.historico_legendas = list(resultado.get("legendas", []))
             st.rerun()
         except json.JSONDecodeError:
             st.error("❌ Erro ao interpretar a resposta da IA. Tente novamente.")
@@ -437,52 +444,4 @@ if st.session_state.resultado:
 
             # ── Histórico / CSV ──
             st.divider()
-            st.markdown("**Histórico desta geração**")
-            df = pd.DataFrame(legendas)
-            df.insert(0, "Rede Social", rede_social)
-            df.insert(1, "Tom", tom)
-            df.insert(2, "Objetivo", objetivo)
-            st.dataframe(df, use_container_width=True)
-
-            csv = df.to_csv(index=False).encode("utf-8")
-            st.download_button(
-                label="Baixar como CSV",
-                data=csv,
-                file_name="legendas_geradas.csv",
-                mime="text/csv",
-            )
-
-            # ── Ações finais ──
-            st.divider()
-            col_regenerar, col_recomecar = st.columns(2)
-            with col_regenerar:
-                regenerar_clicado = st.button("🔁 Gerar Outras Legendas (mesma foto)", type="primary", use_container_width=True)
-            with col_recomecar:
-                recomecar_clicado = st.button("🔄 Recomeçar", use_container_width=True)
-
-            if recomecar_clicado:
-                st.session_state.resultado = None
-                st.session_state.uploader_key += 1
-                st.session_state.variacao = 0
-                st.rerun()
-
-            if regenerar_clicado:
-                st.session_state.variacao = st.session_state.get("variacao", 0) + 1
-                with st.spinner("Gerando suas legendas com IA..."):
-                    try:
-                        novo_resultado = gerar_legendas(
-                            objetivo, rede_social, tom, publico, contexto, image_b64,
-                            variacao=st.session_state.variacao,
-                            legendas_anteriores=legendas
-                        )
-                        st.session_state.resultado = novo_resultado
-                        st.rerun()
-                    except json.JSONDecodeError:
-                        st.error("❌ Erro ao interpretar a resposta da IA. Tente novamente.")
-                    except Exception as e:
-                        st.error(f"❌ Erro: {str(e)}")
-
-    except json.JSONDecodeError:
-        st.error("❌ Erro ao interpretar a resposta da IA. Tente novamente.")
-    except Exception as e:
-        st.error(f"❌ Erro: {str(e)}")
+            st.markdown("**Históri
