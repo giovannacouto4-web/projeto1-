@@ -353,13 +353,37 @@ Formato:
 # ─────────────────────────────────────────────
 # Botão gerar + exibição dos resultados
 # ─────────────────────────────────────────────
-if st.button("✨ Gerar Legendas", type="primary", use_container_width=True):
+if "resultado" not in st.session_state:
+    st.session_state.resultado = None
+
+col_gerar, col_recomecar = st.columns(2)
+
+with col_gerar:
+    label_botao = "🔁 Gerar Outras Legendas" if st.session_state.resultado else "✨ Gerar Legendas"
+    gerar_clicado = st.button(label_botao, type="primary", use_container_width=True)
+
+with col_recomecar:
+    recomecar_clicado = st.button("🔄 Recomeçar", use_container_width=True, disabled=(st.session_state.resultado is None))
+
+if recomecar_clicado:
+    st.session_state.resultado = None
+    st.rerun()
+
+if gerar_clicado:
     with st.spinner("Gerando suas legendas com IA..."):
         try:
             resultado = gerar_legendas(
                 objetivo, rede_social, tom, publico, contexto, image_b64
             )
+            st.session_state.resultado = resultado
+        except json.JSONDecodeError:
+            st.error("❌ Erro ao interpretar a resposta da IA. Tente novamente.")
+        except Exception as e:
+            st.error(f"❌ Erro: {str(e)}")
 
+if st.session_state.resultado:
+    try:
+            resultado = st.session_state.resultado
             hashtags = resultado.get("hashtags", [])
             legendas = resultado.get("legendas", [])
 
@@ -416,8 +440,7 @@ if st.button("✨ Gerar Legendas", type="primary", use_container_width=True):
                 mime="text/csv",
             )
 
-        except json.JSONDecodeError:
-            st.error("❌ Erro ao interpretar a resposta da IA. Tente novamente.")
-        except Exception as e:
-            st.error(f"❌ Erro: {str(e)}")
-
+    except json.JSONDecodeError:
+        st.error("❌ Erro ao interpretar a resposta da IA. Tente novamente.")
+    except Exception as e:
+        st.error(f"❌ Erro: {str(e)}")
