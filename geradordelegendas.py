@@ -356,20 +356,23 @@ Formato:
 if "resultado" not in st.session_state:
     st.session_state.resultado = None
 
-col_gerar, col_recomecar = st.columns(2)
-
-with col_gerar:
-    label_botao = "🔁 Gerar Outras Legendas" if st.session_state.resultado else "✨ Gerar Legendas"
-    gerar_clicado = st.button(label_botao, type="primary", use_container_width=True)
-
-with col_recomecar:
-    recomecar_clicado = st.button("🔄 Recomeçar", use_container_width=True, disabled=(st.session_state.resultado is None))
+if st.session_state.resultado is None:
+    gerar_clicado = st.button("✨ Gerar Legendas", type="primary", use_container_width=True)
+    regenerar_clicado = False
+    recomecar_clicado = False
+else:
+    col_regenerar, col_recomecar = st.columns(2)
+    with col_regenerar:
+        regenerar_clicado = st.button("🔁 Gerar Outras Legendas (mesma foto)", type="primary", use_container_width=True)
+    with col_recomecar:
+        recomecar_clicado = st.button("🔄 Recomeçar", use_container_width=True)
+    gerar_clicado = False
 
 if recomecar_clicado:
     st.session_state.resultado = None
     st.rerun()
 
-if gerar_clicado:
+if gerar_clicado or regenerar_clicado:
     with st.spinner("Gerando suas legendas com IA..."):
         try:
             resultado = gerar_legendas(
