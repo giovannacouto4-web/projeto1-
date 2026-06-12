@@ -273,7 +273,15 @@ def render_post_preview(legenda_texto, hashtags, image_b64=None, username="seu_p
 # ─────────────────────────────────────────────
 # Função principal — gerar legendas
 # ─────────────────────────────────────────────
-def gerar_legendas(objetivo, rede_social, tom, publico, contexto, image_b64):
+def gerar_legendas(objetivo, rede_social, tom, publico, contexto, image_b64, variacao=0):
+
+    instrucao_variacao = ""
+    if variacao > 0:
+        instrucao_variacao = (
+            f"\nEsta é a tentativa número {variacao + 1}. Gere legendas COMPLETAMENTE NOVAS e "
+            f"DIFERENTES das anteriores — mude palavras, estrutura das frases, abertura, "
+            f"piadas/ganchos e hashtags. Não repita frases ou ideias já usadas antes.\n"
+        )
 
     prompt = f"""
 Você é um especialista em marketing digital e copywriting.
@@ -285,7 +293,7 @@ Rede social: {rede_social}
 Tom: {tom}
 Público-alvo: {publico}
 Contexto: {contexto}
-
+{instrucao_variacao}
 Retorne SOMENTE JSON válido.
 
 Formato:
@@ -339,7 +347,7 @@ Formato:
         messages=[
             {"role": "user", "content": content}
         ],
-        temperature=0.8,
+        temperature=min(0.8 + variacao * 0.15, 1.2),
         max_tokens=1500,
         response_format={"type": "json_object"}
     )
@@ -448,13 +456,16 @@ if st.session_state.resultado:
             if recomecar_clicado:
                 st.session_state.resultado = None
                 st.session_state.uploader_key += 1
+                st.session_state.variacao = 0
                 st.rerun()
 
             if regenerar_clicado:
+                st.session_state.variacao = st.session_state.get("variacao", 0) + 1
                 with st.spinner("Gerando suas legendas com IA..."):
                     try:
                         novo_resultado = gerar_legendas(
-                            objetivo, rede_social, tom, publico, contexto, image_b64
+                            objetivo, rede_social, tom, publico, contexto, image_b64,
+                            variacao=st.session_state.variacao
                         )
                         st.session_state.resultado = novo_resultado
                         st.rerun()
