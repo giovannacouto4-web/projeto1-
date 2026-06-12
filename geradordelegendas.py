@@ -157,10 +157,14 @@ st.divider()
 # Passo 1 — Upload de imagem
 # ─────────────────────────────────────────────
 st.markdown('<p class="step-header">Passo 1 — Imagem do post</p>', unsafe_allow_html=True)
+if "uploader_key" not in st.session_state:
+    st.session_state.uploader_key = 0
+
 uploaded_file = st.file_uploader(
     "Envie uma imagem do seu post (opcional)",
     type=["jpg", "jpeg", "png", "webp"],
-    help="A IA irá analisar a imagem para gerar legendas mais contextuais"
+    help="A IA irá analisar a imagem para gerar legendas mais contextuais",
+    key=f"uploader_{st.session_state.uploader_key}"
 )
 
 image_obj = None
@@ -358,21 +362,10 @@ if "resultado" not in st.session_state:
 
 if st.session_state.resultado is None:
     gerar_clicado = st.button("✨ Gerar Legendas", type="primary", use_container_width=True)
-    regenerar_clicado = False
-    recomecar_clicado = False
 else:
-    col_regenerar, col_recomecar = st.columns(2)
-    with col_regenerar:
-        regenerar_clicado = st.button("🔁 Gerar Outras Legendas (mesma foto)", type="primary", use_container_width=True)
-    with col_recomecar:
-        recomecar_clicado = st.button("🔄 Recomeçar", use_container_width=True)
     gerar_clicado = False
 
-if recomecar_clicado:
-    st.session_state.resultado = None
-    st.rerun()
-
-if gerar_clicado or regenerar_clicado:
+if gerar_clicado:
     with st.spinner("Gerando suas legendas com IA..."):
         try:
             resultado = gerar_legendas(
@@ -443,6 +436,32 @@ if st.session_state.resultado:
                 file_name="legendas_geradas.csv",
                 mime="text/csv",
             )
+
+            # ── Ações finais ──
+            st.divider()
+            col_regenerar, col_recomecar = st.columns(2)
+            with col_regenerar:
+                regenerar_clicado = st.button("🔁 Gerar Outras Legendas (mesma foto)", type="primary", use_container_width=True)
+            with col_recomecar:
+                recomecar_clicado = st.button("🔄 Recomeçar", use_container_width=True)
+
+            if recomecar_clicado:
+                st.session_state.resultado = None
+                st.session_state.uploader_key += 1
+                st.rerun()
+
+            if regenerar_clicado:
+                with st.spinner("Gerando suas legendas com IA..."):
+                    try:
+                        novo_resultado = gerar_legendas(
+                            objetivo, rede_social, tom, publico, contexto, image_b64
+                        )
+                        st.session_state.resultado = novo_resultado
+                        st.rerun()
+                    except json.JSONDecodeError:
+                        st.error("❌ Erro ao interpretar a resposta da IA. Tente novamente.")
+                    except Exception as e:
+                        st.error(f"❌ Erro: {str(e)}")
 
     except json.JSONDecodeError:
         st.error("❌ Erro ao interpretar a resposta da IA. Tente novamente.")
