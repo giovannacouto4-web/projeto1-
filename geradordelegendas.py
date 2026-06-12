@@ -444,4 +444,54 @@ if st.session_state.resultado:
 
             # ── Histórico / CSV ──
             st.divider()
-            st.markdown("**Históri
+            st.markdown("**Histórico desta geração**")
+            df = pd.DataFrame(legendas)
+            df.insert(0, "Rede Social", rede_social)
+            df.insert(1, "Tom", tom)
+            df.insert(2, "Objetivo", objetivo)
+            st.dataframe(df, use_container_width=True)
+
+            csv = df.to_csv(index=False).encode("utf-8")
+            st.download_button(
+                label="Baixar como CSV",
+                data=csv,
+                file_name="legendas_geradas.csv",
+                mime="text/csv",
+            )
+
+            # ── Ações finais ──
+            st.divider()
+            col_regenerar, col_recomecar = st.columns(2)
+            with col_regenerar:
+                regenerar_clicado = st.button("🔁 Gerar Outras Legendas (mesma foto)", type="primary", use_container_width=True)
+            with col_recomecar:
+                recomecar_clicado = st.button("🔄 Recomeçar", use_container_width=True)
+
+            if recomecar_clicado:
+                st.session_state.resultado = None
+                st.session_state.uploader_key += 1
+                st.session_state.variacao = 0
+                st.session_state.historico_legendas = []
+                st.rerun()
+
+            if regenerar_clicado:
+                st.session_state.variacao = st.session_state.get("variacao", 0) + 1
+                with st.spinner("Gerando suas legendas com IA..."):
+                    try:
+                        novo_resultado = gerar_legendas(
+                            objetivo, rede_social, tom, publico, contexto, image_b64,
+                            variacao=st.session_state.variacao,
+                            legendas_anteriores=st.session_state.historico_legendas
+                        )
+                        st.session_state.resultado = novo_resultado
+                        st.session_state.historico_legendas.extend(novo_resultado.get("legendas", []))
+                        st.rerun()
+                    except json.JSONDecodeError:
+                        st.error("❌ Erro ao interpretar a resposta da IA. Tente novamente.")
+                    except Exception as e:
+                        st.error(f"❌ Erro: {str(e)}")
+
+    except json.JSONDecodeError:
+        st.error("❌ Erro ao interpretar a resposta da IA. Tente novamente.")
+    except Exception as e:
+        st.error(f"❌ Erro: {str(e)}")
