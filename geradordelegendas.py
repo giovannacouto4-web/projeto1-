@@ -379,6 +379,7 @@ if gerar_clicado or regenerar_clicado:
                 objetivo, rede_social, tom, publico, contexto, image_b64
             )
             st.session_state.resultado = resultado
+            st.rerun()
         except json.JSONDecodeError:
             st.error("❌ Erro ao interpretar a resposta da IA. Tente novamente.")
         except Exception as e:
@@ -447,4 +448,3 @@ if st.session_state.resultado:
         st.error("❌ Erro ao interpretar a resposta da IA. Tente novamente.")
     except Exception as e:
         st.error(f"❌ Erro: {str(e)}")
-
