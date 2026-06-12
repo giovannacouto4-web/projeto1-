@@ -447,3 +447,4 @@ if st.session_state.resultado:
         st.error("❌ Erro ao interpretar a resposta da IA. Tente novamente.")
     except Exception as e:
         st.error(f"❌ Erro: {str(e)}")
+
