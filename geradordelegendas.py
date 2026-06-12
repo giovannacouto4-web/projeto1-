@@ -273,14 +273,21 @@ def render_post_preview(legenda_texto, hashtags, image_b64=None, username="seu_p
 # ─────────────────────────────────────────────
 # Função principal — gerar legendas
 # ─────────────────────────────────────────────
-def gerar_legendas(objetivo, rede_social, tom, publico, contexto, image_b64, variacao=0):
+def gerar_legendas(objetivo, rede_social, tom, publico, contexto, image_b64, variacao=0, legendas_anteriores=None):
 
-    instrucao_variacao = ""
-    if variacao > 0:
-        instrucao_variacao = (
-            f"\nEsta é a tentativa número {variacao + 1}. Gere legendas COMPLETAMENTE NOVAS e "
-            f"DIFERENTES das anteriores — mude palavras, estrutura das frases, abertura, "
-            f"piadas/ganchos e hashtags. Não repita frases ou ideias já usadas antes.\n"
+    import random
+    seed = random.randint(100000, 999999)
+
+    instrucao_variacao = f"\n(ID interno da requisição: {seed} — ignore este número, apenas use-o como referência de unicidade.)\n"
+
+    if variacao > 0 and legendas_anteriores:
+        textos_anteriores = "\n".join(f"- {leg.get('texto', '')}" for leg in legendas_anteriores)
+        instrucao_variacao += (
+            f"\nIMPORTANTE: Esta é a tentativa número {variacao + 1}. As legendas abaixo JÁ FORAM "
+            f"geradas anteriormente e NÃO PODEM se repetir. Crie 3 legendas TOTALMENTE NOVAS, com "
+            f"abordagem, frases de abertura, estrutura, piadas/ganchos e hashtags diferentes:\n\n"
+            f"{textos_anteriores}\n\n"
+            f"Não reutilize nenhuma palavra-chave ou frase das legendas acima.\n"
         )
 
     prompt = f"""
@@ -465,7 +472,8 @@ if st.session_state.resultado:
                     try:
                         novo_resultado = gerar_legendas(
                             objetivo, rede_social, tom, publico, contexto, image_b64,
-                            variacao=st.session_state.variacao
+                            variacao=st.session_state.variacao,
+                            legendas_anteriores=legendas
                         )
                         st.session_state.resultado = novo_resultado
                         st.rerun()
