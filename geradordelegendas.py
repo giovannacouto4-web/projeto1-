@@ -278,7 +278,7 @@ def gerar_legendas(objetivo, rede_social, tom, publico, contexto, image_b64, var
     import random
     seed = random.randint(100000, 999999)
 
-    instrucao_variacao = ""
+    instrucao_variacao = f"\n(ID interno da requisição: {seed} — ignore este número, apenas use-o como referência de unicidade.)\n"
 
     if variacao > 0 and legendas_anteriores:
         textos_anteriores = "\n".join(f"- {leg.get('texto', '')}" for leg in legendas_anteriores)
@@ -291,7 +291,6 @@ def gerar_legendas(objetivo, rede_social, tom, publico, contexto, image_b64, var
         )
 
     prompt = f"""
-{instrucao_variacao}
 Você é um especialista em marketing digital e copywriting.
 
 Crie 3 legendas para redes sociais.
@@ -301,7 +300,7 @@ Rede social: {rede_social}
 Tom: {tom}
 Público-alvo: {publico}
 Contexto: {contexto}
-
+{instrucao_variacao}
 Retorne SOMENTE JSON válido.
 
 Formato:
@@ -355,10 +354,8 @@ Formato:
         messages=[
             {"role": "user", "content": content}
         ],
-        temperature=min(0.9 + variacao * 0.2, 1.5),
-        top_p=0.95,
+        temperature=min(0.8 + variacao * 0.15, 1.2),
         max_tokens=1500,
-        seed=seed,
         response_format={"type": "json_object"}
     )
 
@@ -378,9 +375,6 @@ Formato:
 if "resultado" not in st.session_state:
     st.session_state.resultado = None
 
-if "historico_legendas" not in st.session_state:
-    st.session_state.historico_legendas = []
-
 if st.session_state.resultado is None:
     gerar_clicado = st.button("✨ Gerar Legendas", type="primary", use_container_width=True)
 else:
@@ -393,7 +387,6 @@ if gerar_clicado:
                 objetivo, rede_social, tom, publico, contexto, image_b64
             )
             st.session_state.resultado = resultado
-            st.session_state.historico_legendas = list(resultado.get("legendas", []))
             st.rerun()
         except json.JSONDecodeError:
             st.error("❌ Erro ao interpretar a resposta da IA. Tente novamente.")
@@ -471,7 +464,6 @@ if st.session_state.resultado:
                 st.session_state.resultado = None
                 st.session_state.uploader_key += 1
                 st.session_state.variacao = 0
-                st.session_state.historico_legendas = []
                 st.rerun()
 
             if regenerar_clicado:
@@ -481,10 +473,9 @@ if st.session_state.resultado:
                         novo_resultado = gerar_legendas(
                             objetivo, rede_social, tom, publico, contexto, image_b64,
                             variacao=st.session_state.variacao,
-                            legendas_anteriores=st.session_state.historico_legendas
+                            legendas_anteriores=legendas
                         )
                         st.session_state.resultado = novo_resultado
-                        st.session_state.historico_legendas.extend(novo_resultado.get("legendas", []))
                         st.rerun()
                     except json.JSONDecodeError:
                         st.error("❌ Erro ao interpretar a resposta da IA. Tente novamente.")
