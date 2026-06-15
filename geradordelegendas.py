@@ -7,7 +7,7 @@ import io
 import base64
 
 client = Groq(
-    api_key=st.secrets.toml["GROQ_API_KEY"]
+    api_key=st.secrets["GROQ_API_KEY"]
 )
 
 # ─────────────────────────────────────────────
