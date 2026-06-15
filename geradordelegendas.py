@@ -5,10 +5,12 @@ from PIL import Image
 import json
 import io
 import base64
-import os
 
-api_key = st.secrets.get("GROQ_API_KEY") or os.getenv("GROQ_API_KEY")
-client = Groq(api_key=api_key)
+
+client = Groq(
+    api_key=st.secrets["GROQ_API_KEY"]
+)
+
 
 # ─────────────────────────────────────────────
 # Configuração da página
