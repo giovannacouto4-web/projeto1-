@@ -178,6 +178,9 @@ if uploaded_file:
     buf = io.BytesIO()
     image_obj.save(buf, format="PNG")
     image_b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+    st.session_state.image_b64 = image_b64  # ← SALVA no session_state
+else:
+    image_b64 = st.session_state.get("image_b64", None)  # ← RECUPERA do session_state
 
 st.divider()
 
@@ -466,16 +469,20 @@ if st.session_state.resultado:
                 st.session_state.resultado = None
                 st.session_state.uploader_key += 1
                 st.session_state.variacao = 0
+                st.session_state.image_b64 = None  # ← LIMPA a imagem ao recomeçar
+                st.session_state.legendas_anteriores = []
                 st.rerun()
 
             if regenerar_clicado:
                 st.session_state.variacao = st.session_state.get("variacao", 0) + 1
+                st.session_state.legendas_anteriores = legendas  # ← SALVA legendas atuais
                 with st.spinner("Gerando suas legendas com IA..."):
                     try:
                         novo_resultado = gerar_legendas(
-                            objetivo, rede_social, tom, publico, contexto, image_b64,
+                            objetivo, rede_social, tom, publico, contexto,
+                            st.session_state.get("image_b64"),  # ← USA imagem do session_state
                             variacao=st.session_state.variacao,
-                            legendas_anteriores=legendas
+                            legendas_anteriores=st.session_state.legendas_anteriores
                         )
                         st.session_state.resultado = novo_resultado
                         st.rerun()
