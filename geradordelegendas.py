@@ -66,7 +66,6 @@ for key, default in {
     "image_b64": None,
     "historico_legendas": [],
     "variacao": 0,
-    "acao": None,  # "gerar" | "regenerar" | "recomecar"
 }.items():
     if key not in st.session_state:
         st.session_state[key] = default
@@ -143,17 +142,16 @@ def render_post_preview(legenda_texto, hashtags, image_b64=None, username="seu_p
     """, unsafe_allow_html=True)
 
 
-def gerar_legendas(objetivo, rede_social, tom, publico, contexto, image_b64, variacao=0, historico=None):
+def chamar_api(objetivo, rede_social, tom, publico, contexto, image_b64, variacao, historico):
     import random
     seed = random.randint(100000, 999999)
-
     instrucao = f"\n(Seed: {seed})\n"
 
     if variacao > 0 and historico:
         textos = "\n".join(f"- {leg.get('texto', '')}" for leg in historico)
         instrucao += (
-            f"\nATENÇÃO: Você já gerou as legendas abaixo. Elas NÃO podem se repetir de forma alguma. "
-            f"Crie 3 legendas completamente novas e criativas, com estrutura e abordagem totalmente diferentes:\n\n"
+            f"\nATENÇÃO: As legendas abaixo JÁ FORAM GERADAS e NÃO PODEM se repetir. "
+            f"Crie 3 legendas completamente novas, com estrutura, abertura e abordagem totalmente diferentes:\n\n"
             f"{textos}\n"
         )
 
@@ -196,53 +194,22 @@ Retorne SOMENTE JSON válido, sem texto extra.
         max_tokens=1500,
         response_format={"type": "json_object"}
     )
-
     return json.loads(response.choices[0].message.content)
 
 
-# ── EXECUÇÃO DAS AÇÕES (roda antes de renderizar botões) ──
-if st.session_state.acao == "gerar":
-    st.session_state.acao = None
-    with st.spinner("Gerando suas legendas com IA..."):
-        try:
-            resultado = gerar_legendas(objetivo, rede_social, tom, publico, contexto,
-                                       st.session_state.image_b64)
-            st.session_state.resultado = resultado
-            st.session_state.historico_legendas = list(resultado.get("legendas", []))
-            st.session_state.variacao = 0
-        except Exception as e:
-            st.error(f"❌ Erro: {str(e)}")
-
-elif st.session_state.acao == "regenerar":
-    st.session_state.acao = None
-    st.session_state.variacao += 1
-    with st.spinner("Gerando novas legendas..."):
-        try:
-            novo_resultado = gerar_legendas(
-                objetivo, rede_social, tom, publico, contexto,
-                st.session_state.image_b64,
-                variacao=st.session_state.variacao,
-                historico=st.session_state.historico_legendas
-            )
-            st.session_state.historico_legendas += novo_resultado.get("legendas", [])
-            st.session_state.resultado = novo_resultado
-        except Exception as e:
-            st.error(f"❌ Erro: {str(e)}")
-
-elif st.session_state.acao == "recomecar":
-    st.session_state.acao = None
-    st.session_state.resultado = None
-    st.session_state.image_b64 = None
-    st.session_state.historico_legendas = []
-    st.session_state.variacao = 0
-    st.session_state.uploader_key += 1
-    st.rerun()
-
-# ── Botão gerar (só aparece antes de gerar) ──
+# ── Botão gerar inicial ──
 if st.session_state.resultado is None:
     if st.button("✨ Gerar Legendas", type="primary", use_container_width=True):
-        st.session_state.acao = "gerar"
-        st.rerun()
+        with st.spinner("Gerando suas legendas com IA..."):
+            try:
+                resultado = chamar_api(objetivo, rede_social, tom, publico, contexto,
+                                       st.session_state.image_b64, 0, [])
+                st.session_state.resultado = resultado
+                st.session_state.historico_legendas = list(resultado.get("legendas", []))
+                st.session_state.variacao = 0
+                st.rerun()
+            except Exception as e:
+                st.error(f"❌ Erro: {str(e)}")
 
 # ── Exibição dos resultados ──
 if st.session_state.resultado:
@@ -260,7 +227,7 @@ if st.session_state.resultado:
             st.markdown("**Legenda completa**")
             legenda_completa = leg["texto"] + "\n\n" + " ".join(hashtags)
             st.text_area(label="", value=legenda_completa, height=130,
-                         key=f"legenda_{i}", help="Selecione o texto e copie (Ctrl+A, Ctrl+C)")
+                         key=f"legenda_{i}")
             st.caption("Ou use o botão de cópia abaixo:")
             st.code(legenda_completa, language=None)
 
@@ -284,11 +251,30 @@ if st.session_state.resultado:
 
     st.divider()
     col_regenerar, col_recomecar = st.columns(2)
-    with col_regenerar:
-        if st.button("🔁 Gerar Outras Legendas (mesma foto)", type="primary", use_container_width=True):
-            st.session_state.acao = "regenerar"
-            st.rerun()
+
     with col_recomecar:
         if st.button("🔄 Recomeçar", use_container_width=True):
-            st.session_state.acao = "recomecar"
+            st.session_state.resultado = None
+            st.session_state.image_b64 = None
+            st.session_state.historico_legendas = []
+            st.session_state.variacao = 0
+            st.session_state.uploader_key += 1
             st.rerun()
+
+    with col_regenerar:
+        if st.button("🔁 Gerar Outras Legendas (mesma foto)", type="primary", use_container_width=True):
+            nova_variacao = st.session_state.variacao + 1
+            with st.spinner("Gerando novas legendas..."):
+                try:
+                    novo_resultado = chamar_api(
+                        objetivo, rede_social, tom, publico, contexto,
+                        st.session_state.image_b64,
+                        nova_variacao,
+                        st.session_state.historico_legendas
+                    )
+                    st.session_state.variacao = nova_variacao
+                    st.session_state.historico_legendas += novo_resultado.get("legendas", [])
+                    st.session_state.resultado = novo_resultado
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"❌ Erro: {str(e)}")
