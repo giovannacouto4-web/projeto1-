@@ -49,7 +49,7 @@ with st.sidebar:
     st.markdown("**Como usar:**")
     st.markdown("1. Envie uma imagem (opcional)")
     st.markdown("2. Responda o questionário")
-    st.markdown("3. Escolha quantas legendas quer")
+    st.markdown("3. Escolha quantas versões quer")
     st.markdown("4. Clique em **Gerar Legendas**")
     st.markdown("5. Copie a legenda favorita!")
     st.markdown("---")
@@ -112,8 +112,8 @@ contexto = st.text_area("Contexto extra (opcional)",
 st.divider()
 
 # ── Passo 4 — Quantidade ──
-st.markdown('<p class="step-header">Passo 4 — Quantas legendas?</p>', unsafe_allow_html=True)
-quantidade = st.slider("Número de versões de legendas", min_value=1, max_value=5, value=3)
+st.markdown('<p class="step-header">Passo 4 — Quantas versões de legendas?</p>', unsafe_allow_html=True)
+quantidade = st.slider("Versões", min_value=1, max_value=5, value=1)
 st.caption("Cada versão traz 3 legendas com estilos diferentes.")
 
 st.divider()
@@ -191,15 +191,23 @@ Retorne SOMENTE JSON válido.
     return json.loads(response.choices[0].message.content)
 
 
-# ── Botão Gerar ──
-if st.button("✨ Gerar Legendas", type="primary", use_container_width=True):
+# ── Botões ──
+col_gerar, col_recomecar = st.columns([3, 1])
+with col_recomecar:
+    if st.button("🔄 Recomeçar", use_container_width=True):
+        st.rerun()
+
+with col_gerar:
+    gerar = st.button("✨ Gerar Legendas", type="primary", use_container_width=True)
+
+if gerar:
     todos_resultados = []
     todos_textos = []
 
     progress = st.progress(0, text="Iniciando...")
 
     for i in range(quantidade):
-        progress.progress((i) / quantidade, text=f"Gerando versão {i+1} de {quantidade}...")
+        progress.progress(i / quantidade, text=f"Gerando versão {i+1} de {quantidade}...")
         try:
             resultado = chamar_api(
                 objetivo, rede_social, tom, publico, contexto,
@@ -228,8 +236,7 @@ if st.button("✨ Gerar Legendas", type="primary", use_container_width=True):
                 with st.expander(f"✦ {leg['estilo']}", expanded=(v == 0)):
                     render_post_preview(leg["texto"], hashtags, image_b64)
                     legenda_completa = leg["texto"] + "\n\n" + " ".join(hashtags)
-                    st.text_area(label="", value=legenda_completa, height=130,
-                                 key=f"leg_{v}_{i}")
+                    st.text_area(label="", value=legenda_completa, height=130, key=f"leg_{v}_{i}")
                     st.code(legenda_completa, language=None)
 
             if hashtags:
@@ -238,17 +245,20 @@ if st.button("✨ Gerar Legendas", type="primary", use_container_width=True):
 
             st.divider()
 
-        # CSV com tudo
+        # CSV
         todas_legendas = []
         for v, resultado in enumerate(todos_resultados):
             for leg in resultado.get("legendas", []):
-                leg["versao"] = v + 1
-                todas_legendas.append(leg)
+                todas_legendas.append({
+                    "versao": v + 1,
+                    "estilo": leg.get("estilo", ""),
+                    "texto": leg.get("texto", ""),
+                    "rede_social": rede_social,
+                    "tom": tom,
+                    "objetivo": objetivo,
+                })
 
         df = pd.DataFrame(todas_legendas)
-        df.insert(0, "Rede Social", rede_social)
-        df.insert(1, "Tom", tom)
-        df.insert(2, "Objetivo", objetivo)
         csv = df.to_csv(index=False).encode("utf-8")
         st.download_button(label="⬇️ Baixar todas como CSV", data=csv,
                            file_name="legendas_geradas.csv", mime="text/csv")
