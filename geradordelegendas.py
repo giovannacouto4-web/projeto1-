@@ -49,8 +49,9 @@ with st.sidebar:
     st.markdown("**Como usar:**")
     st.markdown("1. Envie uma imagem (opcional)")
     st.markdown("2. Responda o questionário")
-    st.markdown("3. Clique em **Gerar Legendas**")
-    st.markdown("4. Copie a legenda favorita!")
+    st.markdown("3. Escolha quantas legendas quer")
+    st.markdown("4. Clique em **Gerar Legendas**")
+    st.markdown("5. Copie a legenda favorita!")
     st.markdown("---")
     st.markdown("*Feito com Streamlit + Groq*")
 
@@ -58,39 +59,21 @@ st.markdown('<p class="main-title">✦ Gerador de Legendas</p>', unsafe_allow_ht
 st.markdown('<p class="subtitle">Envie sua imagem e responda o questionário para receber legendas personalizadas com IA</p>', unsafe_allow_html=True)
 st.divider()
 
-# ── Inicialização SEGURA do session_state ──
-if "uploader_key" not in st.session_state:
-    st.session_state["uploader_key"] = 0
-if "resultado" not in st.session_state:
-    st.session_state["resultado"] = None
-if "image_b64" not in st.session_state:
-    st.session_state["image_b64"] = None
-if "historico_legendas" not in st.session_state:
-    st.session_state["historico_legendas"] = []
-if "variacao" not in st.session_state:
-    st.session_state["variacao"] = 0
-
-# ── DEBUG — remova depois que funcionar ──
-st.sidebar.markdown("---")
-st.sidebar.markdown(f"**variacao:** {st.session_state['variacao']}")
-st.sidebar.markdown(f"**historico:** {len(st.session_state['historico_legendas'])} legendas")
-st.sidebar.markdown(f"**tem imagem:** {st.session_state['image_b64'] is not None}")
-
 # ── Passo 1 — Upload ──
 st.markdown('<p class="step-header">Passo 1 — Imagem do post</p>', unsafe_allow_html=True)
 
 uploaded_file = st.file_uploader(
     "Envie uma imagem do seu post (opcional)",
     type=["jpg", "jpeg", "png", "webp"],
-    key=f"uploader_{st.session_state['uploader_key']}"
 )
 
+image_b64 = None
 if uploaded_file is not None:
     image_obj = Image.open(uploaded_file)
     st.image(image_obj, caption="Imagem carregada", use_column_width=True)
     buf = io.BytesIO()
     image_obj.save(buf, format="PNG")
-    st.session_state["image_b64"] = base64.b64encode(buf.getvalue()).decode("utf-8")
+    image_b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
 
 st.divider()
 
@@ -128,6 +111,13 @@ contexto = st.text_area("Contexto extra (opcional)",
 
 st.divider()
 
+# ── Passo 4 — Quantidade ──
+st.markdown('<p class="step-header">Passo 4 — Quantas legendas?</p>', unsafe_allow_html=True)
+quantidade = st.slider("Número de versões de legendas", min_value=1, max_value=5, value=3)
+st.caption("Cada versão traz 3 legendas com estilos diferentes.")
+
+st.divider()
+
 # ── Funções ──
 def render_post_preview(legenda_texto, hashtags, image_b64=None, username="seu_perfil"):
     hashtags_str = " ".join(hashtags) if hashtags else ""
@@ -148,23 +138,20 @@ def render_post_preview(legenda_texto, hashtags, image_b64=None, username="seu_p
     """, unsafe_allow_html=True)
 
 
-def chamar_api(objetivo, rede_social, tom, publico, contexto, image_b64, variacao, historico):
+def chamar_api(objetivo, rede_social, tom, publico, contexto, image_b64, legendas_anteriores):
     import random
     seed = random.randint(100000, 999999)
-    instrucao = f"\n(Seed de aleatoriedade: {seed})\n"
 
-    if variacao > 0 and historico:
-        textos = "\n".join(f"- {leg.get('texto', '')}" for leg in historico)
+    instrucao = f"\n(Seed: {seed})\n"
+    if legendas_anteriores:
+        textos = "\n".join(f"- {t}" for t in legendas_anteriores)
         instrucao += (
-            f"\nATENÇÃO ABSOLUTA: Você já gerou as legendas abaixo. "
-            f"É PROIBIDO repetir qualquer uma delas. "
-            f"Crie 3 legendas 100% novas e diferentes em estrutura, tom e conteúdo:\n\n"
-            f"{textos}\n"
+            f"\nATENÇÃO: As legendas abaixo JÁ EXISTEM. Crie legendas 100% diferentes delas:\n{textos}\n"
         )
 
-    prompt = f"""Você é um especialista em marketing digital e copywriting.
+    prompt = f"""Você é especialista em marketing digital e copywriting.
 
-Crie 3 legendas ÚNICAS e CRIATIVAS para redes sociais.
+Crie 3 legendas ÚNICAS para redes sociais.
 
 Objetivo: {objetivo}
 Rede social: {rede_social}
@@ -173,7 +160,7 @@ Público-alvo: {publico}
 Contexto: {contexto}
 {instrucao}
 
-Retorne SOMENTE JSON válido, sem texto extra.
+Retorne SOMENTE JSON válido.
 
 {{
   "legendas": [
@@ -197,95 +184,71 @@ Retorne SOMENTE JSON válido, sem texto extra.
     response = client.chat.completions.create(
         model=model,
         messages=[{"role": "user", "content": content}],
-        temperature=min(0.9 + variacao * 0.1, 1.4),
+        temperature=1.0,
         max_tokens=1500,
         response_format={"type": "json_object"}
     )
     return json.loads(response.choices[0].message.content)
 
 
-# ── Botão gerar inicial ──
-if st.session_state["resultado"] is None:
-    if st.button("✨ Gerar Legendas", type="primary", use_container_width=True):
-        with st.spinner("Gerando suas legendas com IA..."):
-            try:
-                resultado = chamar_api(
-                    objetivo, rede_social, tom, publico, contexto,
-                    st.session_state["image_b64"], 0, []
-                )
-                st.session_state["resultado"] = resultado
-                st.session_state["historico_legendas"] = list(resultado.get("legendas", []))
-                st.session_state["variacao"] = 0
-                st.rerun()
-            except Exception as e:
-                st.error(f"❌ Erro: {str(e)}")
+# ── Botão Gerar ──
+if st.button("✨ Gerar Legendas", type="primary", use_container_width=True):
+    todos_resultados = []
+    todos_textos = []
 
-# ── Exibição dos resultados ──
-if st.session_state["resultado"] is not None:
-    resultado = st.session_state["resultado"]
-    hashtags = resultado.get("hashtags", [])
-    legendas = resultado.get("legendas", [])
+    progress = st.progress(0, text="Iniciando...")
 
-    st.divider()
-    st.markdown('<p class="step-header">Passo 4 — Suas legendas</p>', unsafe_allow_html=True)
+    for i in range(quantidade):
+        progress.progress((i) / quantidade, text=f"Gerando versão {i+1} de {quantidade}...")
+        try:
+            resultado = chamar_api(
+                objetivo, rede_social, tom, publico, contexto,
+                image_b64,
+                todos_textos
+            )
+            todos_resultados.append(resultado)
+            for leg in resultado.get("legendas", []):
+                todos_textos.append(leg.get("texto", ""))
+        except Exception as e:
+            st.error(f"❌ Erro na versão {i+1}: {str(e)}")
 
-    for i, leg in enumerate(legendas):
-        with st.expander(f"✦ {leg['estilo']}", expanded=True):
-            st.markdown("**Pré-visualização do post**")
-            render_post_preview(leg["texto"], hashtags, st.session_state["image_b64"])
-            st.markdown("**Legenda completa**")
-            legenda_completa = leg["texto"] + "\n\n" + " ".join(hashtags)
-            st.text_area(label="", value=legenda_completa, height=130, key=f"legenda_{i}")
-            st.caption("Ou use o botão de cópia abaixo:")
-            st.code(legenda_completa, language=None)
+    progress.progress(1.0, text="Concluído!")
 
-    if hashtags:
-        st.markdown("---")
-        st.markdown("**#️⃣ Hashtags sugeridas**")
-        pills_html = "".join(f'<span class="hashtag-pill">{h}</span>' for h in hashtags)
-        st.markdown(f'<div style="margin:0.5rem 0 1rem">{pills_html}</div>', unsafe_allow_html=True)
-        st.code(" ".join(hashtags), language=None)
+    if todos_resultados:
+        st.divider()
+        st.markdown('<p class="step-header">Suas legendas</p>', unsafe_allow_html=True)
 
-    st.divider()
-    st.markdown("**Histórico desta geração**")
-    df = pd.DataFrame(legendas)
-    df.insert(0, "Rede Social", rede_social)
-    df.insert(1, "Tom", tom)
-    df.insert(2, "Objetivo", objetivo)
-    st.dataframe(df, use_container_width=True)
-    csv = df.to_csv(index=False).encode("utf-8")
-    st.download_button(label="Baixar como CSV", data=csv,
-                       file_name="legendas_geradas.csv", mime="text/csv")
+        for v, resultado in enumerate(todos_resultados):
+            hashtags = resultado.get("hashtags", [])
+            legendas = resultado.get("legendas", [])
 
-    st.divider()
-    col_regenerar, col_recomecar = st.columns(2)
+            st.markdown(f"### Versão {v+1}")
 
-    with col_regenerar:
-        if st.button("🔁 Gerar Outras Legendas (mesma foto)", type="primary", use_container_width=True):
-            nova_variacao = st.session_state["variacao"] + 1
-            historico_atual = list(st.session_state["historico_legendas"])
-            image_atual = st.session_state["image_b64"]
-            with st.spinner("Gerando novas legendas..."):
-                try:
-                    novo_resultado = chamar_api(
-                        objetivo, rede_social, tom, publico, contexto,
-                        image_atual,
-                        nova_variacao,
-                        historico_atual
-                    )
-                    st.session_state["variacao"] = nova_variacao
-                    st.session_state["historico_legendas"] = historico_atual + novo_resultado.get("legendas", [])
-                    st.session_state["resultado"] = novo_resultado
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"❌ Erro: {str(e)}")
+            for i, leg in enumerate(legendas):
+                with st.expander(f"✦ {leg['estilo']}", expanded=(v == 0)):
+                    render_post_preview(leg["texto"], hashtags, image_b64)
+                    legenda_completa = leg["texto"] + "\n\n" + " ".join(hashtags)
+                    st.text_area(label="", value=legenda_completa, height=130,
+                                 key=f"leg_{v}_{i}")
+                    st.code(legenda_completa, language=None)
 
-    with col_recomecar:
-        if st.button("🔄 Recomeçar", use_container_width=True):
-            st.session_state["resultado"] = None
-            st.session_state["image_b64"] = None
-            st.session_state["historico_legendas"] = []
-            st.session_state["variacao"] = 0
-            st.session_state["uploader_key"] += 1
-            st.rerun()
+            if hashtags:
+                pills_html = "".join(f'<span class="hashtag-pill">{h}</span>' for h in hashtags)
+                st.markdown(f'<div style="margin:0.5rem 0 1rem">{pills_html}</div>', unsafe_allow_html=True)
 
+            st.divider()
+
+        # CSV com tudo
+        todas_legendas = []
+        for v, resultado in enumerate(todos_resultados):
+            for leg in resultado.get("legendas", []):
+                leg["versao"] = v + 1
+                todas_legendas.append(leg)
+
+        df = pd.DataFrame(todas_legendas)
+        df.insert(0, "Rede Social", rede_social)
+        df.insert(1, "Tom", tom)
+        df.insert(2, "Objetivo", objetivo)
+        csv = df.to_csv(index=False).encode("utf-8")
+        st.download_button(label="⬇️ Baixar todas como CSV", data=csv,
+                           file_name="legendas_geradas.csv", mime="text/csv")
