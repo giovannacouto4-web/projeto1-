@@ -191,16 +191,8 @@ Retorne SOMENTE JSON válido.
     return json.loads(response.choices[0].message.content)
 
 
-# ── Botões ──
-col_gerar, col_recomecar = st.columns([3, 1])
-with col_recomecar:
-    if st.button("🔄 Recomeçar", use_container_width=True):
-        st.rerun()
-
-with col_gerar:
-    gerar = st.button("✨ Gerar Legendas", type="primary", use_container_width=True)
-
-if gerar:
+# ── Botão Gerar ──
+if st.button("✨ Gerar Legendas", type="primary", use_container_width=True):
     todos_resultados = []
     todos_textos = []
 
@@ -262,3 +254,7 @@ if gerar:
         csv = df.to_csv(index=False).encode("utf-8")
         st.download_button(label="⬇️ Baixar todas como CSV", data=csv,
                            file_name="legendas_geradas.csv", mime="text/csv")
+
+        st.divider()
+        if st.button("🔄 Recomeçar", use_container_width=True):
+            st.rerun()
