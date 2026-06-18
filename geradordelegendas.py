@@ -234,7 +234,7 @@ st.markdown("""
 <div class="app-header">
     <div class="app-logo">#</div>
     <div class="app-header-text">
-        <p class="app-header-title"> Gerador de Legendas </p></div>
+        <p class="app-header-title"> Gerador de Legendas </p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -449,7 +449,7 @@ if not (objetivo_ok and rede_ok and tom_ok and publico_ok):
     st.info("Preencha todas as opções do questionário para gerar as legendas.")
 
 gerar_btn = st.button(
-    "✨  Gerar legendas",
+    "Gerar legendas",
     type="primary",
     use_container_width=True,
     disabled=not (objetivo_ok and rede_ok and tom_ok and publico_ok),
