@@ -110,7 +110,7 @@ st.markdown("""
     div[data-testid="stSlider"] div[data-testid="stSliderThumb"] {
         background-color: #4A90D9 !important;
     }
-    div[data-testid="stSlider"] > div > div > div {
+    div[data-testid="stSlider"] [data-testid="stSliderTrackFill"] {
         background-color: #4A90D9 !important;
     }
 
