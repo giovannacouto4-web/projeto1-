@@ -59,12 +59,22 @@ st.markdown('<p class="main-title">✦ Gerador de Legendas</p>', unsafe_allow_ht
 st.markdown('<p class="subtitle">Envie sua imagem e responda o questionário para receber legendas personalizadas com IA</p>', unsafe_allow_html=True)
 st.divider()
 
+# ── Controle de versão para resetar widgets ──
+if "form_version" not in st.session_state:
+    st.session_state["form_version"] = 0
+
+if "resultados" not in st.session_state:
+    st.session_state["resultados"] = None
+
+v = st.session_state["form_version"]
+
 # ── Passo 1 — Upload ──
 st.markdown('<p class="step-header">Passo 1 — Imagem do post</p>', unsafe_allow_html=True)
 
 uploaded_file = st.file_uploader(
     "Envie uma imagem do seu post (opcional)",
     type=["jpg", "jpeg", "png", "webp"],
+    key=f"uploader_{v}",
 )
 
 image_b64 = None
@@ -86,9 +96,9 @@ with col1:
         "Engajar e interagir com a audiência",
         "Educar ou informar o público",
         "Inspirar e motivar",
-    ])
+    ], key=f"objetivo_{v}")
 with col2:
-    rede_social = st.selectbox("Rede social", options=["Instagram", "TikTok", "LinkedIn", "Twitter/X"])
+    rede_social = st.selectbox("Rede social", options=["Instagram", "TikTok", "LinkedIn", "Twitter/X"], key=f"rede_{v}")
 
 st.divider()
 
@@ -99,21 +109,21 @@ with col3:
     tom = st.selectbox("Tom desejado", options=[
         "Engraçado e descontraído", "Profissional e formal",
         "Motivacional e inspirador", "Casual e amigável",
-    ])
+    ], key=f"tom_{v}")
 with col4:
     publico = st.selectbox("Público-alvo", options=[
         "Jovens (18–25 anos)", "Adultos (26–40 anos)",
         "Empreendedores e profissionais", "Público geral",
-    ])
+    ], key=f"publico_{v}")
 
 contexto = st.text_area("Contexto extra (opcional)",
-    placeholder="Ex: lançamento de produto, promoção de fim de semana...", height=90)
+    placeholder="Ex: lançamento de produto, promoção de fim de semana...", height=90, key=f"contexto_{v}")
 
 st.divider()
 
 # ── Passo 4 — Quantidade ──
 st.markdown('<p class="step-header">Passo 4 — Quantas versões de legendas?</p>', unsafe_allow_html=True)
-quantidade = st.slider("Versões", min_value=1, max_value=5, value=1)
+quantidade = st.slider("Versões", min_value=1, max_value=5, value=1, key=f"qtd_{v}")
 st.caption("Cada versão traz 3 legendas com estilos diferentes.")
 
 st.divider()
@@ -213,48 +223,56 @@ if st.button("✨ Gerar Legendas", type="primary", use_container_width=True):
             st.error(f"❌ Erro na versão {i+1}: {str(e)}")
 
     progress.progress(1.0, text="Concluído!")
+    st.session_state["resultados"] = todos_resultados
 
-    if todos_resultados:
-        st.divider()
-        st.markdown('<p class="step-header">Suas legendas</p>', unsafe_allow_html=True)
+# ── Exibir resultados salvos ──
+todos_resultados = st.session_state.get("resultados") or []
 
-        for v, resultado in enumerate(todos_resultados):
-            hashtags = resultado.get("hashtags", [])
-            legendas = resultado.get("legendas", [])
+if todos_resultados:
+    st.divider()
+    st.markdown('<p class="step-header">Suas legendas</p>', unsafe_allow_html=True)
 
-            st.markdown(f"### Versão {v+1}")
+    for v_idx, resultado in enumerate(todos_resultados):
+        hashtags = resultado.get("hashtags", [])
+        legendas = resultado.get("legendas", [])
 
-            for i, leg in enumerate(legendas):
-                with st.expander(f"✦ {leg['estilo']}", expanded=(v == 0)):
-                    render_post_preview(leg["texto"], hashtags, image_b64)
-                    legenda_completa = leg["texto"] + "\n\n" + " ".join(hashtags)
-                    st.text_area(label="", value=legenda_completa, height=130, key=f"leg_{v}_{i}")
-                    st.code(legenda_completa, language=None)
+        st.markdown(f"### Versão {v_idx+1}")
 
-            if hashtags:
-                pills_html = "".join(f'<span class="hashtag-pill">{h}</span>' for h in hashtags)
-                st.markdown(f'<div style="margin:0.5rem 0 1rem">{pills_html}</div>', unsafe_allow_html=True)
+        for i, leg in enumerate(legendas):
+            with st.expander(f"✦ {leg['estilo']}", expanded=(v_idx == 0)):
+                render_post_preview(leg["texto"], hashtags, image_b64)
+                legenda_completa = leg["texto"] + "\n\n" + " ".join(hashtags)
+                st.text_area(label="", value=legenda_completa, height=130, key=f"leg_{v}_{v_idx}_{i}")
+                st.code(legenda_completa, language=None)
 
-            st.divider()
-
-        # CSV
-        todas_legendas = []
-        for v, resultado in enumerate(todos_resultados):
-            for leg in resultado.get("legendas", []):
-                todas_legendas.append({
-                    "versao": v + 1,
-                    "estilo": leg.get("estilo", ""),
-                    "texto": leg.get("texto", ""),
-                    "rede_social": rede_social,
-                    "tom": tom,
-                    "objetivo": objetivo,
-                })
-
-        df = pd.DataFrame(todas_legendas)
-        csv = df.to_csv(index=False).encode("utf-8")
-        st.download_button(label="⬇️ Baixar todas como CSV", data=csv,
-                           file_name="legendas_geradas.csv", mime="text/csv")
+        if hashtags:
+            pills_html = "".join(f'<span class="hashtag-pill">{h}</span>' for h in hashtags)
+            st.markdown(f'<div style="margin:0.5rem 0 1rem">{pills_html}</div>', unsafe_allow_html=True)
 
         st.divider()
-        if st.button("🔄 Recomeçar", use_container_width=True):
-            st.rerun()
+
+    # CSV
+    todas_legendas = []
+    for v_idx, resultado in enumerate(todos_resultados):
+        for leg in resultado.get("legendas", []):
+            todas_legendas.append({
+                "versao": v_idx + 1,
+                "estilo": leg.get("estilo", ""),
+                "texto": leg.get("texto", ""),
+                "rede_social": rede_social,
+                "tom": tom,
+                "objetivo": objetivo,
+            })
+
+    df = pd.DataFrame(todas_legendas)
+    csv = df.to_csv(index=False).encode("utf-8")
+    st.download_button(label="⬇️ Baixar todas como CSV", data=csv,
+                       file_name="legendas_geradas.csv", mime="text/csv")
+
+    st.divider()
+
+    # ── Botão Recomeçar ──
+    if st.button("🔄 Recomeçar", use_container_width=True):
+        st.session_state["resultados"] = None
+        st.session_state["form_version"] += 1
+        st.rerun()
