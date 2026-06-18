@@ -110,6 +110,9 @@ st.markdown("""
     div[data-testid="stSlider"] div[data-testid="stSliderThumb"] {
         background-color: #4A90D9 !important;
     }
+    div[data-testid="stSlider"] > div > div > div {
+        background-color: #4A90D9 !important;
+    }
 
     /* ── Botão Gerar (primário) ── */
     div.stButton > button[kind="primary"] {
@@ -304,39 +307,59 @@ st.markdown("""
 with st.container():
     col1, col2 = st.columns(2)
     with col1:
-        objetivo = st.selectbox("Qual o objetivo da publicação?", options=[
-            "Escolha uma opção",
-            "Vender ou promover um produto/serviço",
-            "Engajar e interagir com a audiência",
-            "Educar ou informar o público",
-            "Inspirar e motivar",
-        ], key=f"objetivo_{v}")
+        objetivo = st.selectbox(
+            "Qual o objetivo da publicação?",
+            options=[
+                "Vender ou promover um produto/serviço",
+                "Engajar e interagir com a audiência",
+                "Educar ou informar o público",
+                "Inspirar e motivar",
+            ],
+            index=None,
+            placeholder="Escolha uma opção",
+            key=f"objetivo_{v}",
+        )
     with col2:
-        rede_social = st.selectbox("Rede social", options=[
-            "Escolha uma opção",
-            "Instagram",
-            "TikTok",
-            "LinkedIn",
-            "Twitter/X",
-        ], key=f"rede_{v}")
+        rede_social = st.selectbox(
+            "Rede social",
+            options=[
+                "Instagram",
+                "TikTok",
+                "LinkedIn",
+                "Twitter/X",
+            ],
+            index=None,
+            placeholder="Escolha uma opção",
+            key=f"rede_{v}",
+        )
 
     col3, col4 = st.columns(2)
     with col3:
-        tom = st.selectbox("Qual o estilo da legenda?", options=[
-            "Escolha uma opção",
-            "Engraçado e descontraído",
-            "Profissional e formal",
-            "Motivacional e inspirador",
-            "Casual e amigável",
-        ], key=f"tom_{v}")
+        tom = st.selectbox(
+            "Qual o estilo da legenda?",
+            options=[
+                "Engraçado e descontraído",
+                "Profissional e formal",
+                "Motivacional e inspirador",
+                "Casual e amigável",
+            ],
+            index=None,
+            placeholder="Escolha uma opção",
+            key=f"tom_{v}",
+        )
     with col4:
-        publico = st.selectbox("Qual é o seu público-alvo?", options=[
-            "Escolha uma opção",
-            "Jovens (18–25 anos)",
-            "Adultos (26–40 anos)",
-            "Empreendedores e profissionais",
-            "Público geral",
-        ], key=f"publico_{v}")
+        publico = st.selectbox(
+            "Qual é o seu público-alvo?",
+            options=[
+                "Jovens (18–25 anos)",
+                "Adultos (26–40 anos)",
+                "Empreendedores e profissionais",
+                "Público geral",
+            ],
+            index=None,
+            placeholder="Escolha uma opção",
+            key=f"publico_{v}",
+        )
 
     contexto = st.text_area(
         "Contexto extra (opcional)",
@@ -404,7 +427,7 @@ Crie 3 legendas ÚNICAS para redes sociais.
 Objetivo: {objetivo}
 Rede social: {rede_social}
 Tom: {tom}
-P�blico-alvo: {publico}
+Público-alvo: {publico}
 Contexto: {contexto}
 {instrucao}
 
@@ -440,10 +463,10 @@ Retorne SOMENTE JSON válido.
 
 
 # ── Botão Gerar ──
-objetivo_ok = objetivo != "Escolha uma opção"
-rede_ok = rede_social != "Escolha uma opção"
-tom_ok = tom != "Escolha uma opção"
-publico_ok = publico != "Escolha uma opção"
+objetivo_ok = objetivo is not None
+rede_ok     = rede_social is not None
+tom_ok      = tom is not None
+publico_ok  = publico is not None
 
 if not (objetivo_ok and rede_ok and tom_ok and publico_ok):
     st.info("Preencha todas as opções do questionário para gerar as legendas.")
