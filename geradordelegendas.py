@@ -104,14 +104,27 @@ st.markdown("""
     textarea:focus { border-color: #4A90D9 !important; }
 
     /* ── Slider ── */
-    div[data-testid="stSlider"] [role="slider"] {
+    /* Parte preenchida da linha */
+    div[data-testid="stSlider"] div[role="slider"],
+    div[data-testid="stSlider"] [data-testid="stSliderTrackFill"],
+    div[data-testid="stSlider"] > div > div > div > div > div:first-child {
         background-color: #4A90D9 !important;
     }
-    div[data-testid="stSlider"] div[data-testid="stSliderThumb"] {
+    /* Bolinha (thumb) */
+    div[data-testid="stSlider"] div[role="slider"] {
         background-color: #4A90D9 !important;
+        border-color: #4A90D9 !important;
+        box-shadow: 0 0 0 3px rgba(74,144,217,0.25) !important;
     }
-    div[data-testid="stSlider"] [data-testid="stSliderTrackFill"] {
-        background-color: #4A90D9 !important;
+    /* Numerozinhos em cima da linha (ticks/labels) */
+    div[data-testid="stSlider"] span,
+    div[data-testid="stSlider"] div[data-testid="stTickBarMin"],
+    div[data-testid="stSlider"] div[data-testid="stTickBarMax"] {
+        color: #4A90D9 !important;
+    }
+    /* Cor de acento geral do slider via variável CSS do Streamlit */
+    div[data-testid="stSlider"] * {
+        --primary-color: #4A90D9 !important;
     }
 
     /* ── Botão Gerar (primário) ── */
