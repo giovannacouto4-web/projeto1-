@@ -1,0 +1,428 @@
+Guia para a prova — métodos estatísticos (Python)
+Este documento é seu "cérebro extra" pra prova de consulta. Cada assunto tem: explicação bem simples, quando usar e o código pronto pra copiar e colar. Se travar em algo, procure o título aqui.
+
+Parte 0 — O básico que aparece em TUDO
+Antes de qualquer gráfico ou conta, você sempre faz duas coisas: importar as ferramentas e carregar os dados.
+0.1 — Importar as bibliotecas (sempre no topo do notebook)
+import pandas as pd     # para trabalhar com tabelas de dados
+import altair as alt    # para fazer os gráficos "bonitos"
+
+Pense no pandas como uma planilha do Excel dentro do Python, e no altair como o "photoshop" que desenha os gráficos a partir dessa planilha.
+0.2 — Carregar os dados
+Se o arquivo é .csv (texto separado por vírgula):
+dados = pd.read_csv('nome_do_arquivo.csv')
+
+Se o arquivo é .xls ou .xlsx (Excel):
+dados = pd.read_excel('nome_do_arquivo.xls')
+
+Macete: se der erro dizendo que falta o xlrd, é só instalar antes:
+!pip install xlrd
+
+Depois de carregar, sempre dê uma espiada nos dados:
+dados            # mostra a tabela toda (ou um resumo se for grande)
+dados.head()     # mostra só as 5 primeiras linhas
+dados.tail(10)   # mostra as últimas 10 linhas
+dados.shape      # mostra (linhas, colunas) -> ex: (35, 2)
+dados.dtypes     # mostra o tipo de cada coluna (número, texto, data...)
+
+ Por que isso importa na prova: antes de fazer qualquer gráfico ou conta, o professor sempre pede pra "olhar" os dados primeiro. É o equivalente a abrir a planilha e ver o que tem lá dentro.
+
+Parte 1 — Dados Categóricos (Aula 4): Pizza e Barras
+Dado categórico = dado que é uma "categoria"/rótulo, não um número que se soma (ex: "Facebook", "Instagram", área de estudo, sexo, hospital). Pra esse tipo de dado, usamos gráfico de pizza (setores) ou gráfico de barras.
+1.1 — Checar se os percentuais fazem sentido (macete clássico de prova)
+Se a coluna é de porcentagens, ela deve somar 100%. Sempre confira:
+dados.Percent.sum()   # troque "Percent" pelo nome real da coluna
+
+Se não der 100, ou é erro de arredondamento, ou falta uma categoria "Outros". Pra corrigir jogando a diferença numa linha específica:
+dados.loc[9, 'Percent'] = dados.loc[9, 'Percent'] + 100 - dados.Percent.sum()
+
+Ou pra criar uma linha nova chamada "Outras" com o que falta:
+dados.loc[5] = ['Outras', 100 - dados.Percentage.sum()]
+
+1.2 — Gráfico de Pizza (setores) — jeito rápido (pandas)
+dados.set_index('Nome_da_Categoria').Percent.plot.pie()
+
+Isso pega a coluna de categorias como "rótulo" e desenha a pizza com os valores da outra coluna.
+1.3 — Gráfico de Pizza — jeito "bonito" (Altair)
+Simples, com legenda e dica ao passar o mouse (tooltip):
+alt.Chart(dados).mark_arc().encode(
+    theta="Percent",                       # o "tamanho" da fatia
+    color=alt.Color('Field of Study'),     # a categoria (cor de cada fatia)
+    tooltip=['Field of Study:N', 'Percent:Q']
+)
+
+Versão com título e texto escrito em cada fatia (a que costuma impressionar mais):
+base = alt.Chart(
+    dados,
+    title=alt.TitleParams("Meu Título", anchor='start', fontWeight='normal')
+).encode(
+    theta=alt.Theta("Percent:Q", stack=True),
+    color=alt.Color('Field of Study', legend=None),
+)
+
+pizza = base.mark_arc(outerRadius=115)
+texto = base.mark_text(radius=150, size=15).encode(text=alt.Text("Field of Study"))
+
+pizza + texto   # o "+" sobrepõe os dois gráficos em um só
+
+⚠ ️ Pegadinha de prova: gráfico de pizza só faz sentido se as categorias cobrem 100% do todo e não se sobrepõem. Se cada pessoa pode escolher mais de uma opção (ex: "qual rede social você usa" com múltiplas respostas), pizza é errado — use barras.
+1.4 — Gráfico de Barras — jeito rápido (pandas)
+dados.set_index('Nome_da_Categoria').Percent.plot.bar()
+
+1.5 — Gráfico de Barras — jeito "bonito" (Altair), vertical
+alt.Chart(dados).mark_bar().encode(
+    x=alt.X("Field of Study:N", axis=alt.Axis(labelAngle=-45), sort=None),
+    y="Percent:Q"
+)
+
+1.6 — Gráfico de Barras HORIZONTAL, ordenado do maior pro menor
+Muito usado quando os nomes das categorias são longos (não cabem embaixo):
+alt.Chart(dados).mark_bar().encode(
+    x=alt.X('Percent:Q', axis=alt.Axis(title="Texto do eixo X")),
+    y=alt.Y('Nome_da_Categoria:N', sort='-x')   # sort='-x' ordena do maior pro menor
+).properties(width=500, height=400)
+
+Como ler os códigos :N, :Q, :T:
+Código
+Significa
+Quando usar
+:N
+Nominal (categoria/texto)
+nomes, categorias, rótulos
+:Q
+Quantitativo (número)
+valores numéricos
+:T
+Temporal (data/tempo)
+datas
+
+1.7 — Contando categorias direto (sem já ter a % calculada)
+Se você só tem a lista de linhas (ex: cada linha é uma vítima, um paciente) e quer contar quantas tem de cada categoria, o Altair conta pra você com count():
+alt.Chart(dados).mark_arc().encode(
+    theta="count()",
+    color=alt.Color('genero'),
+    tooltip=['genero:N', 'count():Q']
+)
+
+alt.Chart(dados).mark_bar().encode(
+    y=alt.Y('categoria:N', sort='-x'),
+    x='count()'
+)
+
+
+Parte 2 — Dados Quantitativos: Histograma (Aula 6 e 11)
+Dado quantitativo = é um número de fato (tempo em minutos, dinheiro, idade, emissão de CO2). Para ver "como esse número se distribui", usamos histograma.
+2.1 — O que é um histograma (explicação de criança)
+Imagine que você separa todo mundo em "caixinhas" por faixa de valor (ex: de 0 a 5 minutos, de 5 a 10 minutos...) e depois conta quantas pessoas caem em cada caixinha. O histograma é o desenho dessas caixinhas em barras. Quanto mais alta a barra, mais gente naquela faixa.
+2.2 — Histograma automático (o Altair escolhe o tamanho da caixinha)
+alt.Chart(dados).mark_bar().encode(
+    alt.X("Minutes:Q", bin=True),
+    y='count()',
+)
+
+2.3 — Histograma com tamanho de caixinha (classe) escolhido por você
+Isso é o que o professor mais pede: "faça um histograma de largura X".
+alt.Chart(dados).mark_bar().encode(
+    alt.X("Minutes:Q", bin=alt.Bin(step=5)),   # step = tamanho de cada faixa
+    y='count()',
+)
+
+2.4 — Histograma em PORCENTAGEM (em vez de contagem)
+Útil quando você quer comparar duas bases de tamanhos diferentes:
+alt.Chart(dados).transform_joinaggregate(
+    total='count(*)'
+).transform_calculate(
+    pct='1 / datum.total'
+).mark_bar().encode(
+    alt.X('Escore:Q', bin=alt.Bin(step=0.5)),
+    alt.Y('sum(pct):Q', axis=alt.Axis(format='%'))
+)
+
+2.5 — Como INTERPRETAR um histograma na prova
+Sempre que pedirem "interprete o histograma", fale destes 4 pontos (é praticamente um checklist):
+Forma: tem um pico só (unimodal) ou vários picos? É simétrico ou puxado pra um lado (assimétrico)?
+"Puxado pra direita" (assimétrico à direita) = a maioria dos valores é baixa, mas tem uma "cauda" longa de valores altos.
+Centro: qual é o valor do meio (mediana) mais ou menos?
+Variabilidade: os valores variam pouco ou muito (do mínimo ao máximo)?
+Valores atípicos (outliers): tem alguma barrinha isolada, bem longe do resto?
+2.6 — Contar quantas vezes cada valor aparece (moda / value_counts)
+dados.Minutes.value_counts()
+
+Isso mostra qual valor se repete mais — é como calcular a moda na mão.
+
+Parte 3 — Séries Temporais (Aula 6): Gráfico de Linha ao Longo do Tempo
+Série temporal = quando o eixo X é o TEMPO (anos, dias, meses) e você quer ver como algo mudou.
+3.1 — Transformar uma coluna em data de verdade
+Se a coluna de data está como texto, primeiro converta:
+dados['Data'] = pd.to_datetime(dados.Data)
+dados.dtypes   # confira se ficou "datetime"
+
+3.2 — Gráfico de linha simples
+alt.Chart(dados).mark_line().encode(
+    x='ano',
+    y='mensalidade'
+)
+
+3.3 — Ajustando a escala do eixo Y (pra "zoom" numa parte do gráfico)
+alt.Chart(dados).mark_line().encode(
+    x='Data',
+    y=alt.Y('AltMediaMedidor:Q', scale=alt.Scale(domain=[5, 9]))
+)
+
+3.4 — Calcular variação percentual de um ano/período pro outro
+Muito comum: "quanto aumentou em % de um ano pro outro?"
+dados['aumento_percentual'] = dados['mensalidade'].pct_change() * 100
+
+Isso cria uma coluna nova com a variação % de cada linha comparada com a linha anterior.
+3.5 — Extrair partes de uma data (ano, mês-dia) — para comparar anos diferentes
+dados["Year"] = dados.Data.dt.year               # só o ano
+dados['MonthDay'] = dados.Data.dt.strftime('%m-%d')  # só mês-dia (ignora o ano)
+
+3.6 — FACETAMENTO: um gráfico "empilhado" pra cada categoria/ano
+Facetamento = em vez de misturar tudo numa linha só, o Altair desenha um mini-gráfico separado para cada grupo (ex: um gráfico por ano), um embaixo do outro, com o mesmo eixo. Serve pra comparar padrões entre grupos sem misturar tudo numa linha só (o que ficaria confuso).
+alt.Chart(dados).mark_line().encode(
+    x='MonthDay:T',
+    y=alt.Y('AltMediaMedidor:Q', scale=alt.Scale(domain=[5, 9])),
+    color='Year:N',
+    facet=alt.Facet('Year:N', columns=1)   # 1 gráfico por ano, em coluna
+).properties(height=50, width=400)
+
+3.7 — SOBREPOSIÇÃO: tudo no mesmo gráfico, cor diferente por categoria
+Sobreposição = colocar todas as linhas dentro do mesmo gráfico, cada uma com uma cor, para comparar diretamente. Serve para comparar de forma direta (uma linha "por cima" da outra), diferente do facetamento que separa em gráficos distintos.
+alt.Chart(dados).mark_line().encode(
+    x='Data:T',
+    y='Count:Q',
+    color='Categoria:N'    # cada categoria vira uma linha de cor diferente, no MESMO gráfico
+).properties(height=800, width=1000)
+
+Macete pra saber qual usar: se quer comparar "no detalhe, lado a lado" → facetamento. Se quer comparar "direto, uma cor por cima da outra" → sobreposição (cor).
+3.8 — Agrupar dados por dia/mês (resample) quando você tem várias medições por hora
+Se seus dados têm várias linhas por dia (ex: uma medição por hora) e você quer 1 valor por dia:
+serie_diaria = dados.set_index(pd.to_datetime(dados['Data'])).resample('d').Count.sum()
+
+'d' = agrupar por dia (poderia ser 'M' para mês, 'Y' para ano)
+.sum() = soma os valores do dia (poderia ser .mean() pra média)
+Depois disso, pra plotar, é só:
+alt.Chart(serie_diaria.reset_index()).mark_line().encode(
+    x='Data',
+    y=alt.Y('Count:Q')
+).properties(height=500, width=700)
+
+
+Parte 4 — Medidas Centrais: Média, Mediana e Moda (Aula 11 / "Aula 8")
+4.1 — Explicação de criança
+Média: soma tudo e divide pela quantidade. É "justa", mas se tiver um valor muito fora do padrão (um gigante ou um mínimo), ela se deixa "puxar" para esse lado.
+Mediana: o valor exatamente do MEIO quando você coloca todo mundo em fila, do menor pro maior. Ela não se importa com valores extremos — é "resistente".
+Moda: o valor que mais se repete.
+4.2 — Código
+dados['Coluna'].mean()      # média
+dados['Coluna'].median()    # mediana
+dados['Coluna'].value_counts()  # ajuda a achar a moda (o valor com mais contagem)
+
+Ou, à mão, para uma lista comum de números:
+from statistics import mean, median, stdev
+mean(lista)
+median(lista)
+stdev(lista)
+
+4.3 — Média COM filtro (ex: sem um outlier específico)
+dados[dados.Country != "UnitedStates"]['Dollars'].mean()
+
+Isso lê: "olha só as linhas onde o país NÃO é EUA, e calcula a média da coluna Dollars".
+Outro exemplo, filtrando por valor numérico:
+dados[dados.Minutes < 70].Minutes.mean()
+
+4.4 — Macete de prova: "o quanto um valor atípico distorce a média"
+Compare a média/mediana com e sem o valor suspeito:
+print(dados['Dollars'].mean())                                  # com o valor atípico
+print(dados[dados.Country != "UnitedStates"]['Dollars'].mean())  # sem o valor atípico
+
+Se a média mudar bastante e a mediana quase não mudar → é sinal claro de outlier e de assimetria (distribuição puxada para um lado).
+4.5 — Quando a média é maior que a mediana? (pergunta clássica de prova)
+Média > Mediana → distribuição assimétrica à direita (tem uma "cauda" de valores altos puxando a média pra cima).
+Média < Mediana → distribuição assimétrica à esquerda.
+Média ≈ Mediana → distribuição aproximadamente simétrica.
+
+Parte 5 — Quartis, Valores Atípicos e Boxplot (Aula 11 / "Aula 9")
+5.1 — O que é isso, de um jeito simples
+Imagine a fila de valores (do menor pro maior) cortada em 4 partes iguais:
+Q1 (1º quartil): 25% dos dados estão abaixo dele.
+Q2 = mediana: 50% dos dados estão abaixo dele.
+Q3 (3º quartil): 75% dos dados estão abaixo dele.
+AIQ (Amplitude Interquartil) = Q3 − Q1. Mede o "tamanho da parte do meio" dos dados (onde está o "miolo" da distribuição, ignorando as pontas).
+5.2 — Pegar tudo isso de uma vez (o macete mais usado)
+dados.describe()
+
+Essa função sozinha já entrega: contagem, média, desvio padrão, mínimo, Q1 (25%), mediana (50%), Q3 (75%) e máximo. Decore essa função — ela é ouro na prova.
+5.3 — Calcular o AIQ e descobrir se tem valor atípico (regra 1,5×AIQ)
+Q1 = 13.5   # pegue do describe()
+Q3 = 35     # pegue do describe()
+AIQ = Q3 - Q1
+print(f"AIQ = {AIQ}")
+
+limite_baixo = Q1 - 1.5 * AIQ
+limite_alto = Q3 + 1.5 * AIQ
+print(f"[{limite_baixo}; {limite_alto}]")
+
+Regra: qualquer valor fora do intervalo [Q1 - 1.5×AIQ ; Q3 + 1.5×AIQ] é considerado valor atípico (outlier).
+5.4 — Boxplot (o "desenho" dos quartis)
+alt.Chart(dados).mark_boxplot(extent='min-max').encode(
+    y='Minutes:Q'
+).properties(width=200)
+
+extent='min-max' → a linha (bigode) vai até o mínimo e o máximo de fato.
+extent=1.5 → a linha vai só até 1,5×AIQ, e o que passar disso aparece como pontinho separado (o outlier).
+alt.Chart(dados).mark_boxplot(extent=1.5).encode(
+    y='Minutes:Q'
+).properties(width=200)
+
+5.5 — Comparar dois grupos no MESMO boxplot
+Primeiro junte os dois grupos numa tabela só, marcando a origem de cada um:
+grupo1['Origem'] = "Grupo 1"
+grupo2['Origem'] = "Grupo 2"
+
+dados_juntos = pd.concat([grupo1, grupo2])
+
+Depois é só colocar a "Origem" no eixo:
+alt.Chart(dados_juntos).mark_boxplot(extent=1.5, size=40).encode(
+    alt.X("Minutes:Q"),
+    alt.Y("Origem:N")
+).properties(height=200)
+
+5.6 — Como ler um boxplot na prova
+Caixa deslocada pra direita = valores maiores em geral (comparado ao outro grupo).
+Caixa mais larga (Q1 até Q3 maior) = mais variabilidade / dispersão.
+Pontinho sozinho fora do "bigode" = valor atípico.
+Linha do meio da caixa = mediana.
+
+Parte 6 — Desvio Padrão (Aula 11 / "Aula 10")
+6.1 — Explicação de criança
+O desvio padrão mede o quão "espalhados" os valores estão em torno da média.
+Desvio padrão baixo = os valores são bem parecidos entre si (perto da média).
+Desvio padrão alto = os valores são bem diferentes entre si (espalhados, uns bem longe da média).
+Importante: duas turmas podem ter a MESMA média, mas desvios padrão bem diferentes — uma "mais uniforme" e outra "mais bagunçada".
+6.2 — Código
+from statistics import mean, stdev
+
+print(f"Média = {mean(lista)} ; Desvio padrão = {stdev(lista)}")
+
+Ou com pandas:
+pd.DataFrame(lista).describe().loc[['mean', 'std']]
+
+
+Parte 7 — Resumo Geral / Checklist de Decisão Rápida
+Use essa tabela quando não souber qual gráfico escolher:
+Se o dado é...
+E você quer mostrar...
+Use...
+Categórico (rótulos)
+Proporção de um "todo" (soma 100%)
+Gráfico de pizza
+Categórico (rótulos)
+Comparar quantidades/categorias
+Gráfico de barras
+Quantitativo (números)
+Como os valores se distribuem
+Histograma
+Quantitativo (números)
+Resumo com quartis + outliers
+Boxplot
+Quantitativo ao longo do tempo
+Tendência / evolução
+Gráfico de linha (série temporal)
+Comparar 2+ grupos ao longo do tempo
+Ver padrões separados
+Facetamento
+Comparar 2+ grupos ao longo do tempo
+Ver tudo junto, sobreposto
+Sobreposição (color=)
+
+Checklist do que checar SEMPRE antes de responder uma questão:
+dados.head() / dados.shape / dados.dtypes → entender a base.
+Se for %, confira dados.Coluna.sum() (deve dar 100).
+dados.describe() → média, mediana, quartis, min, max de uma vez.
+Compare média vs. mediana → puxa pra saber se é assimétrico.
+Calcule o AIQ e os limites (1,5×AIQ) → veja se tem outlier.
+Escolha o gráfico certo (use a tabela acima).
+Ao interpretar: fale de Forma, Centro, Variabilidade e Valores atípicos.
+
+Vocabulário rápido (PT) que cai na prova
+Termo
+O que significa
+Variável qualitativa/categórica
+Dado que é categoria/rótulo (não soma)
+Variável quantitativa
+Dado numérico de fato
+Assimétrico à direita
+Cauda longa de valores altos; média > mediana
+Assimétrico à esquerda
+Cauda longa de valores baixos; média < mediana
+Simétrico
+Média ≈ mediana; distribuição "equilibrada"
+Unimodal / plurimodal
+Um pico só / vários picos
+Valor atípico (outlier)
+Valor muito fora do padrão do resto dos dados
+Resistente (robusto)
+Não muda muito quando há outliers (ex: mediana)
+AIQ
+Amplitude Interquartil = Q3 − Q1
+Resample
+Reagrupar uma série temporal por dia/mês/ano
+Facetamento
+Vários mini-gráficos separados, um por grupo
+Sobreposição
+Vários grupos no mesmo gráfico (cores diferentes)
+
+
+Parte Sabrina:
+dados: valores inscritos em um contexto
+variáveis: 
+quantitativas: assume valores numéricos 
+		discreta: números inteiros (número de seguidores no instagram)
+		contínua: números fracionados (valor da fatura mensal da conta do telefone)
+qualitativas: assume categorias 
+		ordinal: possui categoria/hierarquia (ranking dos brasileiros com mais seguidores)
+		nominal: não possui categoria (partidos políticos 
+
+gráficos variáveis qualitativas (aula 4 no git): 
+gráfico de distribuição de frequência: diz quais são os valores daquela variável e a frequência de cada um > pode utilizar gráfico de barras e de setores 
+histogramas: agrupa valores próximos, criando classes/intervalos 
+	interpretação do histograma: padrão geral (certo, forma e variabilidade do gráfico) e desvio (valor fora do padrão geral - valor atípico/outlive)
+*centro: a metade das observações possui valores abaixo e acima dele 
+*variabilidade: valor mínimo até o valor máximo
+*forma: simétrica ou assimétrica 
+série temporal: análise de mudanças nas variáveis ao longo do tempo
+		interpretação da série temporal: padrão geral (ciclos ou tendências) e desvio (mesma definição do histograma)
+*ciclos: variação cíclica
+*tendências: movimento ascendente ou descendente ao longo do tempo 
+
+medidas descritivas (aula 11 no git): 
+média: soma de todos os valores de uma variável dividido pela quantidade de valores 
+moda: valor que mais aparece na variável
+mediana: valores da variável em ordem e o do meio é a mediana 
+média (não é resistente - outlive influenciam muito) x mediana (resistente): 
+		média é utilizada em distribuições simétricas 
+		mediana é utilizada em distribuições assimétricas
+medidas de variabilidade média e mediana:
+média: desvio padrão > valor aleatório diminuído da média  
+mediana: amplitude interquartil (AIQ = Q3 - Q1)
+AIQ: quanto maior, menor a concentração dos dados em volta da mediana e vice-versa
+*representação em boxplot: gráfico com assimetria à direita
+
+indicadores e índices: 
+indicadores: junta variáveis para definir um conceito 
+índice: conjunto de vários indicadores para definir um conceito maior
+
+análise bivariada (aula 14 no git): 
+duas variáveis qualitativas: tabelas de contingência (exibe o número de indivíduos nas possíveis combinações entre duas variáveis) 
+duas variáveis quantitativas: diagrama de dispersão e R de pearson
+diagrama de dispersão: indivíduos são ponto de encontro entre as 2 variáveis sendo avaliadas (se uma for explicativa e outra a resposta, a resposta precisa estar no eixo Y)
+interpretação do diagrama de dispersão: padrão geral (direção, forma e intensidade) e desvio (valor atípico)
+*direção: se o padrão geral sai da parte inferior esquerda e vai para a superior esquerda (positiva), ou se vai da parte superior esquerda para a inferior direita (associação negativa)
+*forma: se os valores formam uma reta, curva ou se oscila
+*intensidade: o quanto os valores se associam a uma reta (se for muito, forte relação linear, se for pouco, fraca relação linear)
+R de pearson (coeficiente de correlação): mede a correlação linear das variáveis > medida de 1 a -1
+*próximo de -1: correlação negativa, uma variável cresce e a outra desce 
+*próximo de 0: correlação inexistente praticamente 
+*próxima de 1: correlação positiva, ambas as variáveis crescem  
