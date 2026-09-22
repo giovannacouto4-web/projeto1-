@@ -430,7 +430,7 @@ R de pearson (coeficiente de correlação): mede a correlação linear das vari�
 - Antes de tudo: carregando os arquivos (⚠️ leia isto com atenção — é a causa nº 1 de erro)
 Se você rodar pd.read_excel('HABILITA.xls') e aparecer FileNotFoundError: No such file or directory, não é erro no código — é que o Python está olhando na pasta errada, ou o arquivo não foi enviado pra dentro do notebook ainda.
 
->>>>>>>>>>>>>>>> (o que eu usei) Passo 1 — descubra o que o notebook está enxergando agora:
+>>>>>>>>>>>>>>>> (o que eu usei) Passo 1 — descubra o que o notebook está enxergando:
 import os
 os.listdir()   # mostra todos os arquivos que estão na pasta atual do notebook
 Se HABILITA.xls (ou o arquivo que você quer usar) não aparecer nessa lista, é por isso que dá erro.
@@ -472,9 +472,6 @@ print(dados.Coluna.median())
 Solução 2 — colocar cada conta numa célula separada (Shift+Enter cria uma célula nova).
 
 Ao longo deste guia, sempre que um resultado precisar aparecer, já deixei o print() ou a célula separada prontos — mas vale saber o porquê, pra você não estranhar quando isso acontecer em outros códigos seus.
-
-
-
 
 - Regra de ouro do Jupyter/Colab: só a última linha de uma célula aparece na tela automaticamente. Se você escrever mais de uma coisa numa célula só (ex: um gráfico e depois um número), só a última vai aparecer — as anteriores rodam "por dentro" mas ficam invisíveis. Por isso, sempre que quiser ver mais de um resultado, ou separe em células diferentes, ou use print() em cada um.
 Situação:	Código-chave
