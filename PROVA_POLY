@@ -427,6 +427,55 @@ R de pearson (coeficiente de correlação): mede a correlação linear das vari�
 *próximo de 0: correlação inexistente praticamente 
 *próxima de 1: correlação positiva, ambas as variáveis crescem  
 
+- Antes de tudo: carregando os arquivos (⚠️ leia isto com atenção — é a causa nº 1 de erro)
+Se você rodar pd.read_excel('HABILITA.xls') e aparecer FileNotFoundError: No such file or directory, não é erro no código — é que o Python está olhando na pasta errada, ou o arquivo não foi enviado pra dentro do notebook ainda.
+
+>>>>>>>>>>>>>>>> (o que eu usei) Passo 1 — descubra o que o notebook está enxergando agora:
+import os
+os.listdir()   # mostra todos os arquivos que estão na pasta atual do notebook
+Se HABILITA.xls (ou o arquivo que você quer usar) não aparecer nessa lista, é por isso que dá erro.
+
+Passo 2 — envie o arquivo pra dentro do notebook, se ainda não enviou:
+No Jupyter/Colab, use o botão de upload (ícone de pasta 📁 na lateral esquerda) e suba os arquivos .xls/.csv extraídos do zip.
+Ou, se preferir por código (funciona no Colab):
+from google.colab import files
+enviados = files.upload()   # abre uma janela pra escolher os arquivos do seu computador
+
+Passo 3 — se os arquivos estão dentro de uma subpasta (ex: você subiu o zip inteiro), descompacte primeiro:
+import zipfile
+with zipfile.ZipFile('bases_revisao.zip', 'r') as z:
+    z.extractall('bases_revisao')   # cria uma pasta chamada bases_revisao com tudo dentro
+
+os.listdir('bases_revisao')   # confira o nome exato dos arquivos aqui dentro
+Se você descompactou assim, o caminho do arquivo passa a ter o nome da pasta na frente:
+
+hab = pd.read_excel('bases_revisao/HABILITA.xls')
+Resumo do que abrir cada tipo de arquivo, depois que o caminho estiver certo:
+
+import pandas as pd
+import altair as alt
+
+dados = pd.read_excel('HABILITA.xls')   # para arquivos .xls / .xlsx
+dados = pd.read_csv('InfoFamiliasEntrevistadas.csv')  # para arquivos .csv
+Macete geral: sempre que um read_excel/read_csv der FileNotFoundError, a primeira coisa a fazer é rodar os.listdir() e comparar o nome exato do arquivo (maiúsculas/minúsculas importam!) com o que você escreveu entre aspas.
+
+Segunda causa comum de "parece que tá faltando algo": células com mais de uma linha de resultado
+No Jupyter/Colab, só a última linha de uma célula aparece na tela sozinha. Se você escrever duas contas na mesma célula, só a de baixo mostra resultado — a de cima roda, mas fica invisível (não é erro, é assim que o Jupyter funciona).
+
+# Isso aqui só mostra o resultado da SEGUNDA linha:
+dados.Coluna.mean()
+dados.Coluna.median()
+Solução 1 — usar print() em cada linha:
+
+print(dados.Coluna.mean())
+print(dados.Coluna.median())
+Solução 2 — colocar cada conta numa célula separada (Shift+Enter cria uma célula nova).
+
+Ao longo deste guia, sempre que um resultado precisar aparecer, já deixei o print() ou a célula separada prontos — mas vale saber o porquê, pra você não estranhar quando isso acontecer em outros códigos seus.
+
+
+
+
 - Regra de ouro do Jupyter/Colab: só a última linha de uma célula aparece na tela automaticamente. Se você escrever mais de uma coisa numa célula só (ex: um gráfico e depois um número), só a última vai aparecer — as anteriores rodam "por dentro" mas ficam invisíveis. Por isso, sempre que quiser ver mais de um resultado, ou separe em células diferentes, ou use print() em cada um.
 Situação:	Código-chave
 Ler dados:	pd.read_excel() / pd.read_csv()
