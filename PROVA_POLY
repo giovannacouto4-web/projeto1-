@@ -427,15 +427,14 @@ R de pearson (coeficiente de correlação): mede a correlação linear das vari�
 *próximo de 0: correlação inexistente praticamente 
 *próxima de 1: correlação positiva, ambas as variáveis crescem  
 
-Regra de ouro do Jupyter/Colab: só a última linha de uma célula aparece na tela automaticamente. Se você escrever mais de uma coisa numa célula só (ex: um gráfico e depois um número), só a última vai aparecer — as anteriores rodam "por dentro" mas ficam invisíveis. Por isso, sempre que quiser ver mais de um resultado, ou separe em células diferentes, ou use print() em cada um.
-
-Situação	Código-chave
-Ler dados	pd.read_excel() / pd.read_csv()
-Ver resumo estatístico completo	.describe()
-Checar se % soma 100	.sum()
-Achar quartis e AIQ	.quantile(0.25), .quantile(0.75)
-Testar valor atípico	Q3 + 1.5*(Q3-Q1) (limite superior)
-Comparar % dentro de grupos (tabela dupla entrada)	filtrar cada grupo com dados[dados.coluna == valor] e calcular % na mão
-Ver associação entre 2 variáveis numéricas	.corr() (perto de 0 = fraca; perto de ±1 = forte)
-Gráfico de dispersão (bidimensional)	alt.Chart(dados).mark_point().encode(x=..., y=...)
-% de aumento ano a ano	.pct_change() * 100
+- Regra de ouro do Jupyter/Colab: só a última linha de uma célula aparece na tela automaticamente. Se você escrever mais de uma coisa numa célula só (ex: um gráfico e depois um número), só a última vai aparecer — as anteriores rodam "por dentro" mas ficam invisíveis. Por isso, sempre que quiser ver mais de um resultado, ou separe em células diferentes, ou use print() em cada um.
+Situação:	Código-chave
+Ler dados:	pd.read_excel() / pd.read_csv()
+Ver resumo estatístico completo:	.describe()
+Checar se % soma 100:	.sum()
+Achar quartis e AIQ:	.quantile(0.25), .quantile(0.75)
+Testar valor atípico:	Q3 + 1.5*(Q3-Q1) (limite superior)
+Comparar % dentro de grupos (tabela dupla entrada):	filtrar cada grupo com dados[dados.coluna == valor] e calcular % na mão
+Ver associação entre 2 variáveis numéricas:	.corr() (perto de 0 = fraca; perto de ±1 = forte)
+Gráfico de dispersão (bidimensional):	alt.Chart(dados).mark_point().encode(x=..., y=...)
+% de aumento ano a ano:	.pct_change() * 100
